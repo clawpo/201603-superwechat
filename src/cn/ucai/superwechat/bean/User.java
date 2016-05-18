@@ -16,7 +16,8 @@ public class User extends Location implements java.io.Serializable {
 	private String muserName;
 	private String muserPassword;
 	private String muserNick;
-	private Integer muserUnreadMsgCount;
+	private Integer muserUnreadMsgCount=0;
+	private String header;
 
 	// Constructors
 
@@ -85,13 +86,35 @@ public class User extends Location implements java.io.Serializable {
 		this.muserUnreadMsgCount = MUserUnreadMsgCount;
 	}
 
+	public String getHeader() {
+		return header;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
+	}
+
 	@Override
 	public String toString() {
 		return "User [MUserId=" + muserId + ", MUserName=" + muserName
 				+ ", MUserPassword=" + muserPassword + ", MUserNick="
 				+ muserNick + ", MUserUnreadMsgCount=" + muserUnreadMsgCount
-				+ "]";
+				+ ", header=" + header + "]";
 	}
-	
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof User)) return false;
+
+		User user = (User) o;
+
+		return getMUserName().equals(user.getMUserName());
+
+	}
+
+	@Override
+	public int hashCode() {
+		return getMUserName().hashCode();
+	}
 }
