@@ -22,9 +22,10 @@ import android.widget.Toast;
 
 import com.easemob.EMError;
 import com.easemob.chat.EMChatManager;
-import cn.ucai.superwechat.SuperWeChatApplication;
-import cn.ucai.superwechat.R;
 import com.easemob.exceptions.EaseMobException;
+
+import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
 
 /**
  * 注册页
@@ -46,9 +47,9 @@ public class RegisterActivity extends BaseActivity {
 
 	/**
 	 * 注册
-	 * 
+     *
 	 * @param view
-	 */
+     */
 	public void register(View view) {
 		final String username = userNameEditText.getText().toString().trim();
 		final String pwd = passwordEditText.getText().toString().trim();
@@ -86,7 +87,7 @@ public class RegisterActivity extends BaseActivity {
 									pd.dismiss();
 								// 保存用户名
 								SuperWeChatApplication.getInstance().setUserName(username);
-								Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), 0).show();
+								Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
 								finish();
 							}
 						});
