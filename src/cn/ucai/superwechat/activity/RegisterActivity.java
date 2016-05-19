@@ -26,8 +26,10 @@ import com.easemob.EMError;
 import com.easemob.chat.EMChatManager;
 import com.easemob.exceptions.EaseMobException;
 
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.listener.OnSetAvatarListener;
 
 /**
  * 注册页
@@ -41,6 +43,8 @@ public class RegisterActivity extends BaseActivity {
 	private EditText passwordEditText;
 	private EditText confirmPwdEditText;
 	private ImageView mivAvatar;
+    OnSetAvatarListener mOnSetAvatarListener;
+	String avatarName;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,30 @@ public class RegisterActivity extends BaseActivity {
     private void setListener() {
 		setLoginClickListener();
         setRegisterClickListener();
+        setAvatarClickListener();
+    }
+
+    private void setAvatarClickListener() {
+        findViewById(R.id.layout_user_avatar).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mOnSetAvatarListener = new OnSetAvatarListener(mContext,R.id.layout_register,getUserName(), I.AVATAR_TYPE_USER_PATH);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode!=RESULT_OK){
+            return;
+        }
+        mOnSetAvatarListener.setAvatar(requestCode,data,mivAvatar);
+    }
+
+    private String getUserName() {
+        avatarName = System.currentTimeMillis()+"";
+        return avatarName;
     }
 
     private void setLoginClickListener() {
