@@ -57,6 +57,7 @@ public class LoginActivity extends BaseActivity {
 	private EditText passwordEditText;
 
 	private boolean progressShow;
+    ProgressDialog pd;
 	private boolean autoLogin = false;
 
 	private String currentUsername;
@@ -112,6 +113,26 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
+    private void setProgressShow() {
+        progressShow = true;
+        pd = new ProgressDialog(LoginActivity.this);
+        pd.setCanceledOnTouchOutside(false);
+        pd.setOnCancelListener(new OnCancelListener() {
+
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                progressShow = false;
+            }
+        });
+        pd.setMessage(getString(R.string.Is_landing));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                pd.show();
+            }
+        });
+    }
+
     /**
 	 * 登录
 	 *
@@ -136,18 +157,7 @@ public class LoginActivity extends BaseActivity {
                     return;
                 }
 
-                progressShow = true;
-                final ProgressDialog pd = new ProgressDialog(LoginActivity.this);
-                pd.setCanceledOnTouchOutside(false);
-                pd.setOnCancelListener(new OnCancelListener() {
-
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        progressShow = false;
-                    }
-                });
-                pd.setMessage(getString(R.string.Is_landing));
-                pd.show();
+                setProgressShow();
 
                 final long start = System.currentTimeMillis();
                 // 调用sdk登陆方法登陆聊天服务器
