@@ -14,6 +14,7 @@
 package cn.ucai.superwechat.activity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -51,7 +52,17 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private void setListener() {
+		setLoginClickListener();
         setRegisterClickListener();
+    }
+
+    private void setLoginClickListener() {
+        findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(mContext,LoginActivity.class));
+            }
+        });
     }
 
     private void initView() {
