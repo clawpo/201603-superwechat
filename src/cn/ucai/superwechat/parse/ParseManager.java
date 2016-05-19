@@ -1,16 +1,10 @@
 package cn.ucai.superwechat.parse;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.text.TextUtils;
 
 import com.easemob.EMValueCallBack;
 import com.easemob.chat.EMChatManager;
-
-import cn.ucai.superwechat.domain.EMUser;
-import cn.ucai.superwechat.utils.UserUtils;
 import com.easemob.util.EMLog;
 import com.easemob.util.HanziToPinyin;
 import com.parse.FindCallback;
@@ -21,6 +15,12 @@ import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.SaveCallback;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import cn.ucai.superwechat.domain.EMUser;
+import cn.ucai.superwechat.utils.UserUtils;
 
 public class ParseManager {
 
