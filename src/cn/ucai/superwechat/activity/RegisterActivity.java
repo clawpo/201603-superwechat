@@ -168,7 +168,7 @@ public class RegisterActivity extends BaseActivity {
     private void registerAppServer() {
         //先注册本地的服务器并上传头像 REQUEST_REGISTER -->okhttp
         //注册环信的服务器 registerEMServer
-        //如果环信的服务器注册失败，删除服务器上面的账号和头像 unRegister-->volley
+        //如果环信的服务器注册失败，删除服务器上面的账号和头像 unRegister-->okhttp
         File file = new File(ImageUtils.getAvatarPath(mContext,I.AVATAR_TYPE_USER_PATH),
                 avatarName + I.AVATAR_SUFFIX_JPG);
         OkHttpUtils<Message> utils = new OkHttpUtils<Message>();
@@ -199,6 +199,27 @@ public class RegisterActivity extends BaseActivity {
 
     }
 
+    private void unRegister() {
+        OkHttpUtils<Message> utils = new OkHttpUtils<Message>();
+        utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
+                .addParam(I.KEY_REQUEST, I.REQUEST_UNREGISTER)//添加上传的请求参数
+                .addParam(I.User.USER_NAME, username)//添加用户的账号
+                .targetClass(Message.class)//设置服务端返回json数据的解析类型
+                .execute(new OkHttpUtils.OnCompleteListener<Message>() {//执行请求，并处理返回结果
+                    @Override
+                    public void onSuccess(Message result) {
+                        pd.dismiss();
+                        Utils.showToast(mContext,R.string.Registration_failed,Toast.LENGTH_SHORT);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        pd.dismiss();
+                        Log.e(TAG, error);
+                    }
+                });
+    }
+
     private void registerEMServer() {
         new Thread(new Runnable() {
             public void run() {
@@ -216,6 +237,7 @@ public class RegisterActivity extends BaseActivity {
                         }
                     });
                 } catch (final EaseMobException e) {
+                    unRegister();
                     runOnUiThread(new Runnable() {
                         public void run() {
                             if (!RegisterActivity.this.isFinishing())
