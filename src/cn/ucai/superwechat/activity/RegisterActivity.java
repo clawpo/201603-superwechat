@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.easemob.EMError;
@@ -33,19 +34,27 @@ import cn.ucai.superwechat.SuperWeChatApplication;
  */
 public class RegisterActivity extends BaseActivity {
 	private EditText userNameEditText;
+	private EditText userNickEditText;
 	private EditText passwordEditText;
 	private EditText confirmPwdEditText;
+	private ImageView mivAvatar;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_register);
-		userNameEditText = (EditText) findViewById(R.id.etUserName);
-		passwordEditText = (EditText) findViewById(R.id.etPassword);
-		confirmPwdEditText = (EditText) findViewById(R.id.etConfirmPassword);
-	}
+		initView();
+    }
 
-	/**
+    private void initView() {
+        userNameEditText = (EditText) findViewById(R.id.etUserName);
+        userNickEditText = (EditText) findViewById(R.id.etNick);
+        passwordEditText = (EditText) findViewById(R.id.etPassword);
+        confirmPwdEditText = (EditText) findViewById(R.id.etConfirmPassword);
+        mivAvatar = (ImageView) findViewById(R.id.iv_avatar);
+    }
+
+    /**
 	 * 注册
      *
 	 * @param view
