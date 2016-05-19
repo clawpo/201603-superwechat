@@ -9,13 +9,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dip"
         android:layout_weight="1" >
-
-        <ImageView
+        <TextView
+            android:layout_centerInParent="true"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_centerInParent="true"
-            android:src="@drawable/welcom_logo" />
+            android:drawableLeft="@drawable/mobile"
+            android:text="@string/app_name"
+            android:textSize="20sp"
+            android:textColor="#000"
+            android:drawablePadding="5dp"
+            android:gravity="center_vertical"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -95,6 +98,7 @@
             android:orientation="horizontal" >
 
             <Button
+                android:id="@+id/btnRegister"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dip"
@@ -102,7 +106,6 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_register_bg"
                 android:gravity="center"
-                android:onClick="register"
                 android:paddingBottom="7dp"
                 android:paddingTop="7dp"
                 android:text="@string/register"
@@ -110,6 +113,7 @@
                 android:textSize="18sp" />
 
             <Button
+                android:id="@+id/btnLogin"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dip"
@@ -117,7 +121,6 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_login_bg"
                 android:gravity="center"
-                android:onClick="login"
                 android:paddingBottom="7dp"
                 android:paddingTop="7dp"
                 android:text="@string/login"
@@ -125,5 +128,13 @@
                 android:textSize="18sp" />
         </LinearLayout>
     </RelativeLayout>
+    <Button
+        android:id="@+id/btnUrl"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="设置服务器的IP地址"
+        android:textColor="#000"
+        android:background="@null"/>
 
 </LinearLayout>
