@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Response;
 import com.easemob.EMCallBack;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
@@ -38,15 +39,19 @@ import java.util.Map;
 
 import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.DemoHXSDKHelper;
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.data.ApiParams;
+import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.db.EMUserDao;
 import cn.ucai.superwechat.db.UserDao;
 import cn.ucai.superwechat.domain.EMUser;
 import cn.ucai.superwechat.utils.CommonUtils;
 import cn.ucai.superwechat.utils.MD5;
+import cn.ucai.superwechat.utils.Utils;
 
 /**
  * 登陆页面
@@ -209,7 +214,39 @@ public class LoginActivity extends BaseActivity {
                 Toast.makeText(getApplicationContext(), getString(R.string.Login_failed),
                         Toast.LENGTH_SHORT).show();
             }
+        }else{
+            //volley login server
+            try {
+                String path = new ApiParams()
+                        .with(I.User.USER_NAME,currentUsername)
+                        .with(I.User.PASSWORD,currentPassword)
+                        .getRequestUrl(I.REQUEST_LOGIN);
+                Log.e(TAG,"path = "+ path);
+                executeRequest(new GsonRequest<User>(path, User.class,
+                        responseListener(), errorListener()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
+    }
+
+    private Response.Listener<User> responseListener() {
+        return new Response.Listener<User>() {
+            @Override
+            public void onResponse(User userBean) {
+				if(userBean.isResult()){
+					saveUser(userBean);
+					userBean.setMUserPassword(MD5.getData(userBean.getMUserPassword()));
+					UserDao dao = new UserDao(mContext);
+					dao.addUser(userBean);
+					loginSuccess();
+				}else{
+					pd.dismiss();
+					Utils.showToast(mContext,Utils.getResourceString(mContext,userBean.getMsg()),Toast.LENGTH_LONG);
+				}
+            }
+        };
     }
 
     /**保存当前登录的用户到全局变量*/
@@ -223,10 +260,6 @@ public class LoginActivity extends BaseActivity {
     }
 
     private void loginSuccess() {
-        // 登陆成功，保存用户名密码
-        SuperWeChatApplication.getInstance().setUserName(currentUsername);
-        SuperWeChatApplication.getInstance().setPassword(currentPassword);
-
         try {
             // ** 第一次登录或者之前logout后再登录，加载所有本地群和回话
             // ** manually load all local groups and
