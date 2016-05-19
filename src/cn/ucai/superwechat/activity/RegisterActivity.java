@@ -44,6 +44,10 @@ public class RegisterActivity extends BaseActivity {
 	private EditText confirmPwdEditText;
 	private ImageView mivAvatar;
     OnSetAvatarListener mOnSetAvatarListener;
+
+    String username;
+    String nick;
+    String pwd;
 	String avatarName;
 
 	@Override
@@ -105,27 +109,37 @@ public class RegisterActivity extends BaseActivity {
 	 * 注册
      *
      */
-	public void setRegisterClickListener() {
+	private void setRegisterClickListener() {
         findViewById(R.id.btnRegister).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String username = userNameEditText.getText().toString().trim();
-                final String pwd = passwordEditText.getText().toString().trim();
+                username = userNameEditText.getText().toString().trim();
+                nick = userNickEditText.getText().toString().trim();
+                pwd = passwordEditText.getText().toString().trim();
                 String confirm_pwd = confirmPwdEditText.getText().toString().trim();
                 if (TextUtils.isEmpty(username)) {
-                    Toast.makeText(mContext, getResources().getString(R.string.User_name_cannot_be_empty), Toast.LENGTH_SHORT).show();
                     userNameEditText.requestFocus();
+                    userNameEditText.setError(getResources().getString(R.string.User_name_cannot_be_empty));
+                    return;
+                } else if (!username.matches("[\\w][\\w\\d_]+")) {
+                    userNameEditText.requestFocus();
+                    userNameEditText.setError(getResources().getString(R.string.User_name_cannot_be_wd));
+                    return;
+                } else if (TextUtils.isEmpty(nick)) {
+                    userNickEditText.requestFocus();
+                    userNickEditText.setError(getResources().getString(R.string.Nick_name_cannot_be_empty));
                     return;
                 } else if (TextUtils.isEmpty(pwd)) {
-                    Toast.makeText(mContext, getResources().getString(R.string.Password_cannot_be_empty), Toast.LENGTH_SHORT).show();
                     passwordEditText.requestFocus();
+                    passwordEditText.setError(getResources().getString(R.string.Password_cannot_be_empty));
                     return;
                 } else if (TextUtils.isEmpty(confirm_pwd)) {
-                    Toast.makeText(mContext, getResources().getString(R.string.Confirm_password_cannot_be_empty), Toast.LENGTH_SHORT).show();
                     confirmPwdEditText.requestFocus();
+                    confirmPwdEditText.setError(getResources().getString(R.string.Confirm_password_cannot_be_empty));
                     return;
                 } else if (!pwd.equals(confirm_pwd)) {
-                    Toast.makeText(mContext, getResources().getString(R.string.Two_input_password), Toast.LENGTH_SHORT).show();
+                    confirmPwdEditText.requestFocus();
+                    confirmPwdEditText.setError(getResources().getString(R.string.Two_input_password));
                     return;
                 }
 
