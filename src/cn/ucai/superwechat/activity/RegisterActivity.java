@@ -102,7 +102,7 @@ public class RegisterActivity extends BaseActivity {
         findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(mContext,LoginActivity.class));
+                finish();
             }
         });
     }
