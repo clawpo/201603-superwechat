@@ -1,10 +1,12 @@
 package cn.ucai.superwechat.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.animation.AlphaAnimation;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -12,15 +14,24 @@ import android.widget.TextView;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
 import cn.ucai.superwechat.DemoHXSDKHelper;
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.db.UserDao;
+import cn.ucai.superwechat.task.DownloadAllGroupTask;
+import cn.ucai.superwechat.task.DownloadContactListTask;
+import cn.ucai.superwechat.task.DownloadPublicGroupTask;
 
 /**
  * 开屏页
  *
  */
 public class SplashActivity extends BaseActivity {
+    private static final String TAG = SplashActivity.class.getName();
 	private RelativeLayout rootLayout;
 	private TextView versionText;
+    Context mContext;
 	
 	private static final int sleepTime = 2000;
 
@@ -28,6 +39,7 @@ public class SplashActivity extends BaseActivity {
 	protected void onCreate(Bundle arg0) {
 		setContentView(R.layout.activity_splash);
 		super.onCreate(arg0);
+        mContext = this;
 
 		rootLayout = (RelativeLayout) findViewById(R.id.splash_root);
 		versionText = (TextView) findViewById(R.id.tv_version);
@@ -41,6 +53,17 @@ public class SplashActivity extends BaseActivity {
 	@Override
 	protected void onStart() {
 		super.onStart();
+
+		if (DemoHXSDKHelper.getInstance().isLogined()) {
+            Log.e(TAG,"start download contact,group,public group");
+            String username = SuperWeChatApplication.getInstance().getUserName();
+            UserDao dao = new UserDao(mContext);
+            User user = dao.findUserByUserName(username);
+            SuperWeChatApplication.getInstance().setUser(user);
+            new DownloadContactListTask(mContext,username).execute();
+            new DownloadAllGroupTask(mContext,username).execute();
+            new DownloadPublicGroupTask(mContext,username, I.PAGE_ID_DEFAULT,I.PAGE_SIZE_DEFAULT).execute();
+		}
 
 		new Thread(new Runnable() {
 			public void run() {
