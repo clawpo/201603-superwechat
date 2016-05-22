@@ -68,6 +68,9 @@ import cn.ucai.superwechat.db.EMUserDao;
 import cn.ucai.superwechat.db.InviteMessgeDao;
 import cn.ucai.superwechat.domain.EMUser;
 import cn.ucai.superwechat.domain.InviteMessage;
+import cn.ucai.superwechat.fragment.ChatAllHistoryFragment;
+import cn.ucai.superwechat.fragment.ContactlistFragment;
+import cn.ucai.superwechat.fragment.SettingsFragment;
 import cn.ucai.superwechat.utils.CommonUtils;
 
 public class MainActivity extends BaseActivity implements EMEventListener {

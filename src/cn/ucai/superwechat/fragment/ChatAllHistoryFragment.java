@@ -1,4 +1,4 @@
-package cn.ucai.superwechat.activity;
+package cn.ucai.superwechat.fragment;
 
 import android.content.Context;
 import android.content.Intent;
@@ -41,6 +41,8 @@ import java.util.List;
 import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.activity.ChatActivity;
+import cn.ucai.superwechat.activity.MainActivity;
 import cn.ucai.superwechat.adapter.ChatAllHistoryAdapter;
 import cn.ucai.superwechat.db.InviteMessgeDao;
 

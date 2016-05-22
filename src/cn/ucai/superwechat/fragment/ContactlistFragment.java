@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package cn.ucai.superwechat.activity;
+package cn.ucai.superwechat.fragment;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -56,6 +56,13 @@ import java.util.Map.Entry;
 import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.activity.AddContactActivity;
+import cn.ucai.superwechat.activity.ChatActivity;
+import cn.ucai.superwechat.activity.GroupsActivity;
+import cn.ucai.superwechat.activity.MainActivity;
+import cn.ucai.superwechat.activity.NewFriendsMsgActivity;
+import cn.ucai.superwechat.activity.PublicChatRoomsActivity;
+import cn.ucai.superwechat.activity.RobotsActivity;
 import cn.ucai.superwechat.adapter.ContactAdapter;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.db.EMUserDao;
