@@ -14,11 +14,12 @@ dependencies {
     compile files('libs/volley.jar')
     compile files('libs/okhttp-2.7.5.jar')
     compile files('libs/okio-1.6.0.jar')
+    compile files('libs/disklrucache-2.0.2.jar')
 }
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "23.0.2"
+    buildToolsVersion "23.0.3"
 
     defaultConfig{
         applicationId "cn.ucai.superwechat"
