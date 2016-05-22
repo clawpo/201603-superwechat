@@ -2,17 +2,22 @@ package cn.ucai.superwechat.utils;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.DemoHXSDKHelper;
-import cn.ucai.superwechat.R;
-import cn.ucai.superwechat.domain.EMUser;
-
+import com.android.volley.toolbox.NetworkImageView;
 import com.squareup.picasso.Picasso;
 
+import cn.ucai.superwechat.DemoHXSDKHelper;
+import cn.ucai.superwechat.I;
+import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.applib.controller.HXSDKHelper;
+import cn.ucai.superwechat.data.RequestManager;
+import cn.ucai.superwechat.domain.EMUser;
+
 public class UserUtils {
+	private static final String TAG = UserUtils.class.getName();
     /**
      * 根据username获取相应user，由于demo没有真实的用户数据，这里给的模拟的数据；
      * @param username
@@ -81,7 +86,7 @@ public class UserUtils {
     
     /**
      * 保存或更新某个用户
-     * @param user
+     * @param newUser
      */
 	public static void saveUserInfo(EMUser newUser) {
 		if (newUser == null || newUser.getUsername() == null) {
@@ -89,5 +94,30 @@ public class UserUtils {
 		}
 		((DemoHXSDKHelper) HXSDKHelper.getInstance()).saveContact(newUser);
 	}
-    
+
+	public static void setUserAvatar(String username, NetworkImageView imageView) {
+		getBitmapFromMemoryCache(username);
+		imageView.setImageUrl(getUserAvatarPath(username),RequestManager.getImageLoader());
+		getBitmapFromMemoryCache(username);
+	}
+
+	private static void getBitmapFromMemoryCache(String url) {
+		boolean i = RequestManager.getImageLoader().isCached(getUserAvatarPath(url),200,200);
+		Log.e(TAG,"isCache ="+i);
+
+//		Bitmap b = RequestManager.getImageLoader().get(url,).getBitmap();
+//		Log.e(TAG,"b="+b);
+	}
+
+	private static String getUserAvatarKey(String avatarName) {
+		if (avatarName.isEmpty())return null;
+		String key = MD5.getData(getUserAvatarPath(avatarName));
+		return key;
+	}
+
+	private static String getUserAvatarPath(String avatarName) {
+		if (avatarName.isEmpty())return null;
+		return I.DOWNLOAD_USER_AVATAR_URL + avatarName;
+	}
+
 }
