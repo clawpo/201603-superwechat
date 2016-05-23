@@ -2,7 +2,6 @@ package cn.ucai.superwechat.utils;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,6 +14,7 @@ import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.Contact;
+import cn.ucai.superwechat.bean.User;
 import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.domain.EMUser;
 
@@ -87,6 +87,13 @@ public class UserUtils {
 			Picasso.with(context).load(R.drawable.default_avatar).into(imageView);
 		}
 	}
+
+    public static void setCurrentUserAvatar(NetworkImageView imageView) {
+        User user = SuperWeChatApplication.getInstance().getUser();
+        if(user!=null){
+            setUserAvatar(getAvatarPath(user.getMUserName()),imageView);
+        }
+    }
 
     /**
      * 设置用户昵称
