@@ -49,14 +49,12 @@ import com.easemob.util.EMLog;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.activity.AddContactActivity;
 import cn.ucai.superwechat.activity.ChatActivity;
 import cn.ucai.superwechat.activity.GroupsActivity;
@@ -66,6 +64,7 @@ import cn.ucai.superwechat.activity.PublicChatRoomsActivity;
 import cn.ucai.superwechat.activity.RobotsActivity;
 import cn.ucai.superwechat.adapter.ContactAdapter;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
+import cn.ucai.superwechat.bean.Contact;
 import cn.ucai.superwechat.db.EMUserDao;
 import cn.ucai.superwechat.db.InviteMessgeDao;
 import cn.ucai.superwechat.domain.EMUser;
@@ -94,6 +93,7 @@ public class ContactlistFragment extends Fragment {
     private EMUser toBeProcessUser;
     private String toBeProcessUsername;
 
+    private ArrayList<Contact> mContactList = new ArrayList<Contact>();
     ContactListChangedReceiver mReceiver;
 
 	class HXContactSyncListener implements HXSDKHelper.HXSyncListener {
@@ -473,41 +473,38 @@ public class ContactlistFragment extends Fragment {
 	 * 获取联系人列表，并过滤掉黑名单和排序
 	 */
 	private void getContactList() {
-		contactList.clear();
+        mContactList.clear();
 		//获取本地好友列表
-		Map<String, EMUser> users = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList();
-		Iterator<Entry<String, EMUser>> iterator = users.entrySet().iterator();
-		while (iterator.hasNext()) {
-			Entry<String, EMUser> entry = iterator.next();
-			if (!entry.getKey().equals(Constant.NEW_FRIENDS_USERNAME)
-			        && !entry.getKey().equals(Constant.GROUP_USERNAME)
-			        && !entry.getKey().equals(Constant.CHAT_ROOM)
-					&& !entry.getKey().equals(Constant.CHAT_ROBOT)
-					&& !blackList.contains(entry.getKey()))
-				contactList.add(entry.getValue());
-		}
-		// 排序
-		Collections.sort(contactList, new Comparator<EMUser>() {
+        ArrayList<Contact> contactList = SuperWeChatApplication.getInstance().getContactList();
+        mContactList.addAll(contactList);
+        // 添加"群聊"
+        Contact groupUser = new Contact();
+        String strGroup = getActivity().getString(R.string.group_chat);
+        groupUser.setMContactCname(Constant.GROUP_USERNAME);
+        groupUser.setMUserName(Constant.GROUP_USERNAME);
+        groupUser.setMUserNick(strGroup);
+        groupUser.setHeader("");
+        if(mContactList.indexOf(groupUser)==-1){
+            mContactList.add(0, groupUser);
+        }
+        // 添加user"申请与通知"
+        Contact newFriends = new Contact();
+        newFriends.setMContactCname(Constant.NEW_FRIENDS_USERNAME);
+        newFriends.setMUserName(Constant.NEW_FRIENDS_USERNAME);
+        String strChat = getActivity().getString(R.string.Application_and_notify);
+        newFriends.setMUserNick(strChat);
+        newFriends.setHeader("");
+        if(mContactList.indexOf(newFriends)==-1){
+            mContactList.add(0, newFriends);
+        }
+        // 排序
+        Collections.sort(this.contactList, new Comparator<EMUser>() {
 
-			@Override
-			public int compare(EMUser lhs, EMUser rhs) {
-				return lhs.getUsername().compareTo(rhs.getUsername());
-			}
-		});
-
-//		if(users.get(Constant.CHAT_ROBOT)!=null){
-//			contactList.add(0, users.get(Constant.CHAT_ROBOT));
-//		}
-		// 加入"群聊"和"聊天室"
-//        if(users.get(Constant.CHAT_ROOM) != null)
-//            contactList.add(0, users.get(Constant.CHAT_ROOM));
-        if(users.get(Constant.GROUP_USERNAME) != null)
-            contactList.add(0, users.get(Constant.GROUP_USERNAME));
-        
-		// 把"申请与通知"添加到首位
-		if(users.get(Constant.NEW_FRIENDS_USERNAME) != null)
-		    contactList.add(0, users.get(Constant.NEW_FRIENDS_USERNAME));
-		
+            @Override
+            public int compare(EMUser lhs, EMUser rhs) {
+                return lhs.getUsername().compareTo(rhs.getUsername());
+            }
+        });
 	}
 	
 	void hideSoftKeyboard() {
