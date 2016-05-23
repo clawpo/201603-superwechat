@@ -68,6 +68,7 @@ import cn.ucai.superwechat.bean.Contact;
 import cn.ucai.superwechat.db.EMUserDao;
 import cn.ucai.superwechat.db.InviteMessgeDao;
 import cn.ucai.superwechat.domain.EMUser;
+import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.widget.Sidebar;
 
 /**
@@ -483,7 +484,6 @@ public class ContactlistFragment extends Fragment {
         groupUser.setMContactCname(Constant.GROUP_USERNAME);
         groupUser.setMUserName(Constant.GROUP_USERNAME);
         groupUser.setMUserNick(strGroup);
-        groupUser.setHeader("");
         if(mContactList.indexOf(groupUser)==-1){
             mContactList.add(0, groupUser);
         }
@@ -493,16 +493,18 @@ public class ContactlistFragment extends Fragment {
         newFriends.setMUserName(Constant.NEW_FRIENDS_USERNAME);
         String strChat = getActivity().getString(R.string.Application_and_notify);
         newFriends.setMUserNick(strChat);
-        newFriends.setHeader("");
         if(mContactList.indexOf(newFriends)==-1){
             mContactList.add(0, newFriends);
         }
+        for (Contact contact: mContactList) {
+            UserUtils.setUserHearder(contact.getMContactCname(),contact);
+        }
         // 排序
-        Collections.sort(this.contactList, new Comparator<EMUser>() {
+        Collections.sort(this.mContactList, new Comparator<Contact>() {
 
             @Override
-            public int compare(EMUser lhs, EMUser rhs) {
-                return lhs.getUsername().compareTo(rhs.getUsername());
+            public int compare(Contact lhs, Contact rhs) {
+                return lhs.getHeader().compareTo(rhs.getHeader());
             }
         });
 	}
