@@ -59,14 +59,12 @@ public class UserUtils {
 
     public static void setUserBeanAvatar(String username, NetworkImageView imageView) {
         Contact contact = getUserBeanInfo(username);
-        Log.e(TAG,"contact="+contact);
         if(contact != null && contact.getMContactCname() != null){
             setUserAvatar(getAvatarPath(username),imageView);
         }
     }
 
     private static void setUserAvatar(String url, NetworkImageView imageView) {
-        Log.e(TAG,"url="+url);
         if(url==null || url.isEmpty()) return;
         imageView.setDefaultImageResId(R.drawable.default_avatar);
         imageView.setImageUrl(url, RequestManager.getImageLoader());
@@ -102,7 +100,7 @@ public class UserUtils {
     	}
     }
 
-    public static void setUserBean(String username,TextView textView) {
+    public static void setUserBeanNick(String username,TextView textView) {
         Contact contact = getUserBeanInfo(username);
         if(contact!=null){
             if(contact.getMUserNick()!=null){
