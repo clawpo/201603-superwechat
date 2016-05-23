@@ -2,27 +2,25 @@ package cn.ucai.superwechat.data;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.Environment;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
-import com.jakewharton.disklrucache.DiskLruCache;
 
-import java.io.File;
-import java.io.IOException;
+import cn.ucai.superwechat.SuperWeChatApplication;
 
 public class RequestManager {
 	private static RequestQueue mRequestQueue;
 	private static ImageLoader mImageLoader;
-
-    /**
-     * 图片硬盘缓存核心类。
-     */
-    private static DiskLruCache mDiskLruCache;
+    // 获取图片缓存类对象
+    private static ImageLoader.ImageCache mImageCache = new ImageCacheUtil();
 
 	private RequestManager() {
 		// no instances
@@ -36,18 +34,7 @@ public class RequestManager {
 		// Use 1/8th of the available memory for this memory cache.
 		int cacheSize = 1024 * 1024 * memClass / 8;
 		mImageLoader = new ImageLoader(mRequestQueue, new BitmapLruCache(cacheSize));
-        try {
-            // 获取图片缓存路径
-            File cacheDir = getDiskCacheDir(context, "thumb");
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs();
-            }
-            // 创建DiskLruCache实例，初始化缓存数据
-            mDiskLruCache = DiskLruCache
-                    .open(cacheDir, getAppVersion(context), 1, 10 * 1024 * 1024);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 	}
 
 	public static RequestQueue getRequestQueue() {
@@ -84,52 +71,70 @@ public class RequestManager {
 		}
 	}
 
-    public static DiskLruCache getDiskLruCache(){
-        if (mDiskLruCache != null) {
-            return mDiskLruCache;
-        } else {
-            throw new IllegalStateException("DiskLruCache not initialized");
-        }
-    }
-
     /**
-     * 将缓存记录同步到journal文件中。
+     * 获取ImageListener
+     *
+     * @param view
+     * @param defaultImage
+     * @param errorImage
+     * @return
      */
-    public static void fluchCache() {
-        if (mDiskLruCache != null) {
-            try {
-                mDiskLruCache.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
+    public static ImageLoader.ImageListener getImageListener
+    (final NetworkImageView view, final int defaultImage, final int errorImage) {
+
+        return new ImageLoader.ImageListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // 回调失败
+                if (errorImage >0) {
+                    view.setErrorImageResId(errorImage);
+                }
             }
-        }
+
+            @Override
+            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+                // 回调成功
+                Log.e("main","response="+response);
+                if (response.getBitmap() != null) {
+                    view.setImageBitmap(response.getBitmap());
+                } else if (defaultImage >0) {
+                    view.setDefaultImageResId(defaultImage);
+                }
+            }
+        };
+
     }
 
     /**
-     * 根据传入的uniqueName获取硬盘缓存的路径地址。
+     * 提供给外部调用方法
+     *
+     * @param url
+     * @param view
+     * @param defaultImage
+     * @param errorImage
      */
-    private static File getDiskCacheDir(Context context, String uniqueName) {
-        String cachePath;
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
-                || !Environment.isExternalStorageRemovable()) {
-            cachePath = context.getExternalCacheDir().getPath();
-        } else {
-            cachePath = context.getCacheDir().getPath();
-        }
-        return new File(cachePath + File.separator + uniqueName);
+    public static void loadImage(String url, NetworkImageView view,
+                                 int defaultImage, int errorImage) {
+        mImageLoader.get(url, getImageListener(view, defaultImage, errorImage), 0, 0);
     }
 
     /**
-     * 获取当前应用程序的版本号
+     * 提供给外部调用方法
+     *
+     * @param url
+     * @param view
+     * @param defaultImage
+     * @param errorImage
      */
-    private static int getAppVersion(Context context) {
-        try {
-            PackageInfo info = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(),0);
-            return info.versionCode;
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return 1;
+    public static void loadImage(String url, NetworkImageView view,
+                                 int defaultImage, int errorImage,
+                                 int maxWidth, int maxHeight) {
+        mImageLoader.get(url, getImageListener(view, defaultImage, errorImage), maxWidth, maxHeight);
+    }
+
+    public static Bitmap getBitmapFromRes(int resId) {
+        Resources res = SuperWeChatApplication.applicationContext.getResources();
+        return BitmapFactory.decodeResource(res, resId);
     }
 }
