@@ -39,7 +39,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -243,9 +242,8 @@ public class ContactlistFragment extends Fragment {
     }
 
     private void setAddContactListener() {
-        ImageView addContactView = (ImageView) getView().findViewById(R.id.iv_new_contact);
         // 进入添加好友页
-        addContactView.setOnClickListener(new OnClickListener() {
+        getView().findViewById(R.id.iv_new_contact).setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
