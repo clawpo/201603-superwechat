@@ -65,6 +65,11 @@ public class UserUtils {
             setUserAvatar(getAvatarPath(username),imageView);
         }
     }
+    public static void setUserBeanAvatar(User user, NetworkImageView imageView) {
+        if(user!=null && user.getMUserName()!=null) {
+            setUserAvatar(getAvatarPath(user.getMUserName()), imageView);
+        }
+    }
 
     private static void setUserAvatar(String url, NetworkImageView imageView) {
         if(url==null || url.isEmpty()) return;
@@ -124,6 +129,15 @@ public class UserUtils {
             }
         } else {
             textView.setText(username);
+        }
+    }
+    public static void setUserBeanNick(User user,TextView textView) {
+        if(user!=null){
+            if(user.getMUserNick()!=null){
+                textView.setText(user.getMUserNick());
+            } else if(user.getMUserName()!=null){
+                textView.setText(user.getMUserName());
+            }
         }
     }
 
