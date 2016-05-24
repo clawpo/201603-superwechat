@@ -22,11 +22,11 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMContactManager;
 
 import cn.ucai.superwechat.DemoHXSDKHelper;
@@ -39,7 +39,7 @@ public class AddContactActivity extends BaseActivity{
 	private LinearLayout searchedUserLayout;
 	private TextView nameText,mTextView;
 	private Button searchBtn;
-	private ImageView avatar;
+	private NetworkImageView avatar;
 	private InputMethodManager inputMethodManager;
 	private String toAddUsername;
 	private ProgressDialog progressDialog;
@@ -58,16 +58,21 @@ public class AddContactActivity extends BaseActivity{
 		searchedUserLayout = (LinearLayout) findViewById(R.id.ll_user);
 		nameText = (TextView) findViewById(R.id.name);
 		searchBtn = (Button) findViewById(R.id.search);
-		avatar = (ImageView) findViewById(R.id.avatar);
+		avatar = (NetworkImageView) findViewById(R.id.avatar);
 		inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+		setListener();
+	}
+
+	private void setListener() {
+		setSearchContactListener();
+		setAddContactListener();
 	}
 	
 	
 	/**
 	 * 查找contact
-	 * @param v
 	 */
-	public void searchContact(View v) {
+	public void setSearchContactListener() {
 		final String name = editText.getText().toString();
 		String saveText = searchBtn.getText().toString();
 		
@@ -90,9 +95,8 @@ public class AddContactActivity extends BaseActivity{
 	
 	/**
 	 *  添加contact
-	 * @param view
 	 */
-	public void addContact(View view){
+	public void setAddContactListener(){
 		if(SuperWeChatApplication.getInstance().getUserName().equals(nameText.getText().toString())){
 			String str = getString(R.string.not_add_myself);
 			startActivity(new Intent(this, AlertDialog.class).putExtra("msg", str));
