@@ -3,6 +3,7 @@ package cn.ucai.superwechat.activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.EMValueCallBack;
 import com.squareup.picasso.Picasso;
@@ -27,11 +29,16 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 
 import cn.ucai.superwechat.DemoHXSDKHelper;
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
+import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.data.ApiParams;
+import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.domain.EMUser;
 import cn.ucai.superwechat.utils.UserUtils;
+import cn.ucai.superwechat.utils.Utils;
 
 public class UserProfileActivity extends BaseActivity implements OnClickListener{
 	
@@ -45,12 +52,13 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	private ProgressDialog dialog;
 	private RelativeLayout rlNickName;
 	
-	
+	Context mContext;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
 		super.onCreate(arg0);
 		setContentView(R.layout.activity_user_profile);
+        mContext = this;
 		initView();
 		initListener();
 	}
@@ -107,7 +115,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 								Toast.makeText(UserProfileActivity.this, getString(R.string.toast_nick_not_isnull), Toast.LENGTH_SHORT).show();
 								return;
 							}
-							updateRemoteNick(nickString);
+                            updateUserNick(nickString);
 						}
 					}).setNegativeButton(R.string.dl_cancel, null).show();
 			break;
@@ -167,10 +175,35 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 		builder.create().show();
 	}
 	
-	
+	private void updateUserNick(String nickName) {
+        dialog = ProgressDialog.show(this, getString(R.string.dl_update_nick), getString(R.string.dl_waiting));
+        try {
+            String path = new ApiParams()
+                .with(I.User.USER_NAME,SuperWeChatApplication.getInstance().getUserName())
+                .with(I.User.NICK,nickName)
+                .getRequestUrl(I.REQUEST_UPDATE_USER_NICK);
+            executeRequest(new GsonRequest<User>(path,User.class,
+                    responseUpdateUserNickListener(),errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	private void updateRemoteNick(final String nickName) {
-		dialog = ProgressDialog.show(this, getString(R.string.dl_update_nick), getString(R.string.dl_waiting));
+    private Response.Listener<User> responseUpdateUserNickListener() {
+        return new Response.Listener<User>() {
+            @Override
+            public void onResponse(User user) {
+                if(user.isResult()){
+                    updateRemoteNick(user.getMUserNick());
+                }else{
+                    Utils.showToast(mContext,Utils.getResourceString(mContext,user.getMsg()),Toast.LENGTH_SHORT);
+                    dialog.dismiss();
+                }
+            }
+        };
+    }
+
+    private void updateRemoteNick(final String nickName) {
 		new Thread(new Runnable() {
 
 			@Override
@@ -195,6 +228,8 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 							Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatenick_success), Toast.LENGTH_SHORT)
 									.show();
 							tvNickName.setText(nickName);
+                            SuperWeChatApplication.currentUserNick = nickName;
+                            SuperWeChatApplication.getInstance().getUser().setMUserNick(nickName);
 						}
 					});
 				}
