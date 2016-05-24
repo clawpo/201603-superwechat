@@ -124,7 +124,7 @@ public class ChatAllHistoryAdapter extends ArrayAdapter<EMConversation> {
 					holder.name.setText(username);
 				}
 			}else{
-				UserUtils.setUserNick(username, holder.name);
+				UserUtils.setUserBeanNick(username, holder.name);
 			}
 		}
 
