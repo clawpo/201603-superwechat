@@ -1,18 +1,17 @@
 package cn.ucai.superwechat.activity;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
@@ -27,16 +26,22 @@ import com.easemob.EMValueCallBack;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
+import cn.ucai.superwechat.bean.Message;
 import cn.ucai.superwechat.bean.User;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
+import cn.ucai.superwechat.data.MultipartRequest;
+import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.domain.EMUser;
+import cn.ucai.superwechat.listener.OnSetAvatarListener;
+import cn.ucai.superwechat.utils.ImageUtils;
 import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.utils.Utils;
 
@@ -52,7 +57,9 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	private ProgressDialog dialog;
 	private RelativeLayout rlNickName;
 	
-	Context mContext;
+	Activity mContext;
+    OnSetAvatarListener mOnSetAvatarListener;
+    String avatarName;
 	
 	@Override
 	protected void onCreate(Bundle arg0) {
@@ -101,7 +108,9 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.user_head_avatar:
-			uploadHeadPhoto();
+            mOnSetAvatarListener = new OnSetAvatarListener(mContext,R.id.layout_user_profile,
+                    getUserName(),I.AVATAR_TYPE_USER_PATH);
+//			uploadHeadPhoto();
 			break;
 		case R.id.rl_nickname:
 			final EditText editText = new EditText(this);
@@ -238,86 +247,144 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (requestCode) {
-		case REQUESTCODE_PICK:
-			if (data == null || data.getData() == null) {
-				return;
-			}
-			startPhotoZoom(data.getData());
-			break;
-		case REQUESTCODE_CUTTING:
-			if (data != null) {
-				setPicToView(data);
-			}
-			break;
-		default:
-			break;
-		}
+	protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
+//		switch (requestCode) {
+//		case REQUESTCODE_PICK:
+//			if (data == null || data.getData() == null) {
+//				return;
+//			}
+//			startPhotoZoom(data.getData());
+//			break;
+//		case REQUESTCODE_CUTTING:
+//			if (data != null) {
+//				setPicToView(data);
+//			}
+//			break;
+//		default:
+//			break;
+//		}
 		super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode==RESULT_OK){
+            dialog = ProgressDialog.show(this, getString(R.string.dl_update_photo), getString(R.string.dl_waiting));
+            mOnSetAvatarListener.setAvatar(requestCode,data,headAvatar);
+            uploadAvatarByMultipart();
+            dialog.show();
+        }
 	}
+    private final String boundary = "apiclient-" + System.currentTimeMillis();
+    private final String mimeType = "multipart/form-data;boundary=" + boundary;
+    private byte[] multipartBody;
+    private Bitmap bitmap;
+    private void uploadAvatarByMultipart(){
+        File file = new File(ImageUtils.getAvatarPath(mContext,I.AVATAR_TYPE_USER_PATH),
+                avatarName + I.AVATAR_SUFFIX_JPG);
+        String path = file.getAbsolutePath();
+        bitmap = BitmapFactory.decodeFile(path);
+        multipartBody = getImageBytes(bitmap);
+        String url = null;
+        try {
+            url = new ApiParams()
+                    .with(I.User.USER_NAME, SuperWeChatApplication.getInstance().getUserName())
+                    .with(I.AVATAR_TYPE,I.AVATAR_TYPE_USER_PATH)
+                    .getRequestUrl(I.REQUEST_UPLOAD_AVATAR);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        executeRequest(new MultipartRequest<Message>(url,Message.class,null,
+                uploadAvatarByMultipartListener(),errorListener(),mimeType, multipartBody));
+    }
 
-	public void startPhotoZoom(Uri uri) {
-		Intent intent = new Intent("com.android.camera.action.CROP");
-		intent.setDataAndType(uri, "image/*");
-		intent.putExtra("crop", true);
-		intent.putExtra("aspectX", 1);
-		intent.putExtra("aspectY", 1);
-		intent.putExtra("outputX", 300);
-		intent.putExtra("outputY", 300);
-		intent.putExtra("return-data", true);
-		intent.putExtra("noFaceDetection", true);
-		startActivityForResult(intent, REQUESTCODE_CUTTING);
-	}
-	
-	/**
-	 * save the picture data
-	 * 
-	 * @param picdata
-	 */
-	private void setPicToView(Intent picdata) {
-		Bundle extras = picdata.getExtras();
-		if (extras != null) {
-			Bitmap photo = extras.getParcelable("data");
-			Drawable drawable = new BitmapDrawable(getResources(), photo);
-			headAvatar.setImageDrawable(drawable);
-			uploadUserAvatar(Bitmap2Bytes(photo));
-		}
-
-	}
-	
-	private void uploadUserAvatar(final byte[] data) {
-		dialog = ProgressDialog.show(this, getString(R.string.dl_update_photo), getString(R.string.dl_waiting));
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				final String avatarUrl = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getUserProfileManager().uploadUserAvatar(data);
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						dialog.dismiss();
-						if (avatarUrl != null) {
-							Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_success),
+    private Response.Listener<Message> uploadAvatarByMultipartListener() {
+        return new Response.Listener<Message>() {
+            @Override
+            public void onResponse(Message result) {
+                Log.e("main","resule="+result);
+                if(result.isResult()){
+                    headAvatar.setImageUrl("", RequestManager.getImageLoader());
+                    UserUtils.setCurrentUserAvatar(headAvatar);
+                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getMsg()),Toast.LENGTH_SHORT);
+                    dialog.dismiss();
+                }else{
+                    Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_fail),
 									Toast.LENGTH_SHORT).show();
-						} else {
-							Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_fail),
-									Toast.LENGTH_SHORT).show();
-						}
+                    dialog.dismiss();
+                }
+            }
+        };
+    }
+    public byte[] getImageBytes(Bitmap bmp){
+        if(bmp==null)return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG,100,baos);
+        byte[] imageBytes = baos.toByteArray();
+        return imageBytes;
+    }
 
-					}
-				});
-
-			}
-		}).start();
-
-		dialog.show();
-	}
-	
-	
-	public byte[] Bitmap2Bytes(Bitmap bm){
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
-		return baos.toByteArray();
-	}
+//	public void startPhotoZoom(Uri uri) {
+//		Intent intent = new Intent("com.android.camera.action.CROP");
+//		intent.setDataAndType(uri, "image/*");
+//		intent.putExtra("crop", true);
+//		intent.putExtra("aspectX", 1);
+//		intent.putExtra("aspectY", 1);
+//		intent.putExtra("outputX", 200);
+//		intent.putExtra("outputY", 200);
+//		intent.putExtra("return-data", true);
+//		intent.putExtra("noFaceDetection", true);
+//		startActivityForResult(intent, REQUESTCODE_CUTTING);
+//	}
+//
+//	/**
+//	 * save the picture data
+//	 *
+//	 * @param picdata
+//	 */
+//	private void setPicToView(Intent picdata) {
+//		Bundle extras = picdata.getExtras();
+//		if (extras != null) {
+//			Bitmap photo = extras.getParcelable("data");
+//			Drawable drawable = new BitmapDrawable(getResources(), photo);
+//			headAvatar.setImageDrawable(drawable);
+//			uploadUserAvatar(Bitmap2Bytes(photo));
+//		}
+//
+//	}
+//
+//	private void uploadUserAvatar(final byte[] data) {
+//		dialog = ProgressDialog.show(this, getString(R.string.dl_update_photo), getString(R.string.dl_waiting));
+//		new Thread(new Runnable() {
+//
+//			@Override
+//			public void run() {
+//				final String avatarUrl = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getUserProfileManager().uploadUserAvatar(data);
+//				runOnUiThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						dialog.dismiss();
+//						if (avatarUrl != null) {
+//							Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_success),
+//									Toast.LENGTH_SHORT).show();
+//						} else {
+//							Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_fail),
+//									Toast.LENGTH_SHORT).show();
+//						}
+//
+//					}
+//				});
+//
+//			}
+//		}).start();
+//
+//		dialog.show();
+//	}
+//
+//
+//	public byte[] Bitmap2Bytes(Bitmap bm){
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//		bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+//		return baos.toByteArray();
+//	}
+    private String getUserName() {
+        avatarName = System.currentTimeMillis()+"";
+        return avatarName;
+    }
 }
