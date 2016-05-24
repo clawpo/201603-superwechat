@@ -91,7 +91,7 @@ public class ContactlistFragment extends Fragment {
 	HXContactInfoSyncListener contactInfoSyncListener;
 	View progressBar;
 	Handler handler = new Handler();
-    private EMUser toBeProcessUser;
+    private Contact toBeProcessUser;
     private String toBeProcessUsername;
 
     private ArrayList<Contact> mContactList = new ArrayList<Contact>();
@@ -211,7 +211,7 @@ public class ContactlistFragment extends Fragment {
 		});
 		
 		// 设置adapter
-		adapter = new ContactAdapter(getActivity(), R.layout.row_contact, contactList);
+		adapter = new ContactAdapter(getActivity(), R.layout.row_contact, mContactList);
 		listView.setAdapter(adapter);
         setListener();
 
@@ -274,7 +274,7 @@ public class ContactlistFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String username = adapter.getItem(position).getUsername();
+                String username = adapter.getItem(position).getMContactCname();
                 if (Constant.NEW_FRIENDS_USERNAME.equals(username)) {
                     // 进入申请与通知页面
                     EMUser user = ((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList().get(Constant.NEW_FRIENDS_USERNAME);
@@ -291,7 +291,7 @@ public class ContactlistFragment extends Fragment {
                     startActivity(new Intent(getActivity(), RobotsActivity.class));
                 }else {
                     // demo中直接进入聊天页面，实际一般是进入用户详情页
-                    startActivity(new Intent(getActivity(), ChatActivity.class).putExtra("userId", adapter.getItem(position).getUsername()));
+                    startActivity(new Intent(getActivity(), ChatActivity.class).putExtra("userId", adapter.getItem(position).getMContactCname()));
                 }
             }
         });
@@ -302,7 +302,7 @@ public class ContactlistFragment extends Fragment {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		if (((AdapterContextMenuInfo) menuInfo).position > 1) {
 		    toBeProcessUser = adapter.getItem(((AdapterContextMenuInfo) menuInfo).position);
-		    toBeProcessUsername = toBeProcessUser.getUsername();
+		    toBeProcessUsername = toBeProcessUser.getMContactCname();
 			getActivity().getMenuInflater().inflate(R.menu.context_contact_list, menu);
 		}
 	}
@@ -315,7 +315,7 @@ public class ContactlistFragment extends Fragment {
                 deleteContact(toBeProcessUser);
                 // 删除相关的邀请消息
                 InviteMessgeDao dao = new InviteMessgeDao(getActivity());
-                dao.deleteMessage(toBeProcessUser.getUsername());
+                dao.deleteMessage(toBeProcessUser.getMContactCname());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -349,7 +349,7 @@ public class ContactlistFragment extends Fragment {
 	 * 
 	 * @param tobeDeleteUser
 	 */
-	public void deleteContact(final EMUser tobeDeleteUser) {
+	public void deleteContact(final Contact tobeDeleteUser) {
 		String st1 = getResources().getString(R.string.deleting);
 		final String st2 = getResources().getString(R.string.Delete_failed);
 		final ProgressDialog pd = new ProgressDialog(getActivity());
@@ -359,11 +359,11 @@ public class ContactlistFragment extends Fragment {
 		new Thread(new Runnable() {
 			public void run() {
 				try {
-					EMContactManager.getInstance().deleteContact(tobeDeleteUser.getUsername());
+					EMContactManager.getInstance().deleteContact(tobeDeleteUser.getMContactCname());
 					// 删除db和内存中此用户的数据
 					EMUserDao dao = new EMUserDao(getActivity());
-					dao.deleteContact(tobeDeleteUser.getUsername());
-					((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList().remove(tobeDeleteUser.getUsername());
+					dao.deleteContact(tobeDeleteUser.getMContactCname());
+					((DemoHXSDKHelper)HXSDKHelper.getInstance()).getContactList().remove(tobeDeleteUser.getMContactCname());
 					getActivity().runOnUiThread(new Runnable() {
 						public void run() {
 							pd.dismiss();
