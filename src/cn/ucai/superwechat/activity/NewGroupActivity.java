@@ -31,6 +31,7 @@ import com.easemob.exceptions.EaseMobException;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.bean.Contact;
 import cn.ucai.superwechat.listener.OnSetAvatarListener;
 
 public class NewGroupActivity extends BaseActivity {
@@ -145,7 +146,14 @@ public class NewGroupActivity extends BaseActivity {
                 // 调用sdk创建群组方法
                 String groupName = groupNameEditText.getText().toString().trim();
                 String desc = introductionEditText.getText().toString();
-                String[] members = data.getStringArrayExtra("newmembers");
+                Contact[] contacts = (Contact[]) data.getSerializableExtra("newmembers");
+                String[] members = null;
+                if(contacts!=null && contacts.length>0){
+                    members = new String[contacts.length];
+                    for (int i=0;i<contacts.length;i++){
+                        members[i] = contacts[i].getMContactCname();
+                    }
+                }
                 try {
                     if(checkBox.isChecked()){
                         //创建公开群，此种方式创建的群，可以自由加入
