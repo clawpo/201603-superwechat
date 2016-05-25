@@ -14,6 +14,7 @@
 package cn.ucai.superwechat.activity;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -37,10 +38,13 @@ public class NewGroupActivity extends BaseActivity {
 	private CheckBox memberCheckbox;
 	private LinearLayout openInviteContainer;
 
+    Context mContext;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_new_group);
+        mContext = this;
 		groupNameEditText = (EditText) findViewById(R.id.edit_group_name);
 		introductionEditText = (EditText) findViewById(R.id.edit_group_introduction);
 		checkBox = (CheckBox) findViewById(R.id.cb_public);
@@ -60,20 +64,23 @@ public class NewGroupActivity extends BaseActivity {
 		});
 	}
 
-	/**
-	 * @param v
-	 */
-	public void save(View v) {
-		String str6 = getResources().getString(R.string.Group_name_cannot_be_empty);
-		String name = groupNameEditText.getText().toString();
-		if (TextUtils.isEmpty(name)) {
-			Intent intent = new Intent(this, AlertDialog.class);
-			intent.putExtra("msg", str6);
-			startActivity(intent);
-		} else {
-			// 进通讯录选人
-			startActivityForResult(new Intent(this, GroupPickContactsActivity.class).putExtra("groupName", name), 0);
-		}
+	public void setSaveGroupClickListener() {
+		findViewById(R.id.btnSaveGroup).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String str6 = getResources().getString(R.string.Group_name_cannot_be_empty);
+                String name = groupNameEditText.getText().toString();
+                if (TextUtils.isEmpty(name)) {
+                    Intent intent = new Intent(mContext, AlertDialog.class);
+                    intent.putExtra("msg", str6);
+                    startActivity(intent);
+                } else {
+                    // 进通讯录选人
+                    startActivityForResult(new Intent(mContext, GroupPickContactsActivity.class).putExtra("groupName", name), 0);
+                }
+            }
+        });
+
 	}
 	
 	@Override
