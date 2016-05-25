@@ -248,25 +248,13 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 
 	@Override
 	protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
-//		switch (requestCode) {
-//		case REQUESTCODE_PICK:
-//			if (data == null || data.getData() == null) {
-//				return;
-//			}
-//			startPhotoZoom(data.getData());
-//			break;
-//		case REQUESTCODE_CUTTING:
-//			if (data != null) {
-//				setPicToView(data);
-//			}
-//			break;
-//		default:
-//			break;
-//		}
 		super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode==RESULT_OK){
+        Log.e("main","requestCode="+requestCode+",resultCode="+resultCode);
+        mOnSetAvatarListener.setAvatar(requestCode,data,headAvatar);
+        if(resultCode==RESULT_OK && requestCode == OnSetAvatarListener.REQUEST_CROP_PHOTO){
             dialog = ProgressDialog.show(this, getString(R.string.dl_update_photo), getString(R.string.dl_waiting));
-            mOnSetAvatarListener.setAvatar(requestCode,data,headAvatar);
+            RequestManager.getRequestQueue().getCache()
+                    .remove(UserUtils.getAvatarPath(SuperWeChatApplication.getInstance().getUserName()));
             uploadAvatarByMultipart();
             dialog.show();
         }
@@ -298,9 +286,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
         return new Response.Listener<Message>() {
             @Override
             public void onResponse(Message result) {
-                Log.e("main","resule="+result);
                 if(result.isResult()){
-                    headAvatar.setImageUrl("", RequestManager.getImageLoader());
                     UserUtils.setCurrentUserAvatar(headAvatar);
                     Utils.showToast(mContext,Utils.getResourceString(mContext,result.getMsg()),Toast.LENGTH_SHORT);
                     dialog.dismiss();

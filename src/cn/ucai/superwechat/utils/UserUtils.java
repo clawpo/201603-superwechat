@@ -83,7 +83,7 @@ public class UserUtils {
                 R.drawable.default_avatar,R.drawable.default_avatar);
     }
 
-    private static String getAvatarPath(String username) {
+    public static String getAvatarPath(String username) {
         if(username==null || username.isEmpty())return null;
         return I.DOWNLOAD_USER_AVATAR_URL + username;
     }
