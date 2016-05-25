@@ -199,5 +199,20 @@ public class UserUtils {
             }
         }
     }
-    
+
+    public static void setGroupBeanAvatar(String mGroupHxid, NetworkImageView imageView) {
+        if(mGroupHxid!=null && !mGroupHxid.isEmpty()) {
+            setGroupAvatar(getGroupAvatarPath(mGroupHxid),imageView);
+        }
+    }
+    public static String getGroupAvatarPath(String hxid) {
+        if(hxid==null || hxid.isEmpty())return null;
+        return I.DOWNLOAD_GROUP_AVATAR_URL + hxid;
+    }
+    private static void setGroupAvatar(String url, NetworkImageView imageView) {
+        if(url==null || url.isEmpty()) return;
+        imageView.setDefaultImageResId(R.drawable.group_icon);
+        imageView.setImageUrl(url, RequestManager.getImageLoader());
+        imageView.setErrorImageResId(R.drawable.group_icon);
+    }
 }
