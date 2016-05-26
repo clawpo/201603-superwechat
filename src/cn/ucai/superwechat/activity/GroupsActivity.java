@@ -90,13 +90,10 @@ public class GroupsActivity extends BaseActivity {
 		setContentView(R.layout.fragment_groups);
 
 		instance = this;
+		initView();
 		inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 		grouplist = SuperWeChatApplication.getInstance().getGroupList();
-		groupListView = (ListView) findViewById(R.id.list);
-		
-		swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
-		swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
-		                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+
 		swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
 			@Override
@@ -140,8 +137,7 @@ public class GroupsActivity extends BaseActivity {
 				return false;
 			}
 		});
-		
-		progressBar = (View)findViewById(R.id.progress_bar);
+
 		
 		syncListener = new SyncListener();
 		HXSDKHelper.getInstance().addSyncGroupListener(syncListener);
@@ -156,7 +152,15 @@ public class GroupsActivity extends BaseActivity {
 		registerGroupChangedReceiver();
 	}
 
-	/**
+    private void initView() {
+        groupListView = (ListView) findViewById(R.id.list);
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_layout);
+        swipeRefreshLayout.setColorSchemeResources(android.R.color.holo_blue_bright, android.R.color.holo_green_light,
+                android.R.color.holo_orange_light, android.R.color.holo_red_light);
+        progressBar = (View)findViewById(R.id.progress_bar);
+    }
+
+    /**
 	 * 进入公开群聊列表
 	 */
 	public void onPublicGroups(View view) {
