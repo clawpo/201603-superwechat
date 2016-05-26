@@ -92,54 +92,8 @@ public class GroupsActivity extends BaseActivity {
 		instance = this;
 		initView();
         initData();
+        setListener();
 		inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-
-		swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
-
-			@Override
-			public void onRefresh() {
-			    MainActivity.asyncFetchGroupsFromServer();
-			}
-		});
-
-
-		groupListView.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				if (position == 1) {
-					// 新建群聊
-					startActivityForResult(new Intent(GroupsActivity.this, NewGroupActivity.class), 0);
-				} else if (position == 2) {
-					// 添加公开群
-					startActivityForResult(new Intent(GroupsActivity.this, PublicGroupsActivity.class), 0);
-				} else {
-					// 进入群聊
-					Intent intent = new Intent(GroupsActivity.this, ChatActivity.class);
-					// it is group chat
-					intent.putExtra("chatType", ChatActivity.CHATTYPE_GROUP);
-					intent.putExtra("groupId", groupAdapter.getItem(position).getMGroupHxid());
-					startActivityForResult(intent, 0);
-				}
-			}
-
-		});
-		groupListView.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				if (getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
-					if (getCurrentFocus() != null)
-						inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
-								InputMethodManager.HIDE_NOT_ALWAYS);
-				}
-				return false;
-			}
-		});
-
-		
-		syncListener = new SyncListener();
-		HXSDKHelper.getInstance().addSyncGroupListener(syncListener);
 
 		if (!HXSDKHelper.getInstance().isGroupsSyncedWithServer()) {
 			progressBar.setVisibility(View.VISIBLE);
@@ -150,6 +104,63 @@ public class GroupsActivity extends BaseActivity {
 		refresh();
 		registerGroupChangedReceiver();
 	}
+
+    private void setListener() {
+        setGroupRefreshListener();
+        setGroupListViewItemClickListener();
+        setGroupListViewTouchListener();
+        syncListener = new SyncListener();
+        HXSDKHelper.getInstance().addSyncGroupListener(syncListener);
+    }
+
+    private void setGroupListViewTouchListener() {
+        groupListView.setOnTouchListener(new OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (getWindow().getAttributes().softInputMode != WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN) {
+                    if (getCurrentFocus() != null)
+                        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                                InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setGroupListViewItemClickListener() {
+        groupListView.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == 1) {
+                    // 新建群聊
+                    startActivityForResult(new Intent(GroupsActivity.this, NewGroupActivity.class), 0);
+                } else if (position == 2) {
+                    // 添加公开群
+                    startActivityForResult(new Intent(GroupsActivity.this, PublicGroupsActivity.class), 0);
+                } else {
+                    // 进入群聊
+                    Intent intent = new Intent(GroupsActivity.this, ChatActivity.class);
+                    // it is group chat
+                    intent.putExtra("chatType", ChatActivity.CHATTYPE_GROUP);
+                    intent.putExtra("groupId", groupAdapter.getItem(position).getMGroupHxid());
+                    startActivityForResult(intent, 0);
+                }
+            }
+
+        });
+    }
+
+    private void setGroupRefreshListener() {
+        swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+
+            @Override
+            public void onRefresh() {
+                MainActivity.asyncFetchGroupsFromServer();
+            }
+        });
+    }
 
     private void initData() {
         grouplist = SuperWeChatApplication.getInstance().getGroupList();
