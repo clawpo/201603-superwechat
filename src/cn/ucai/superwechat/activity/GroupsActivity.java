@@ -91,8 +91,8 @@ public class GroupsActivity extends BaseActivity {
 
 		instance = this;
 		initView();
+        initData();
 		inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-		grouplist = SuperWeChatApplication.getInstance().getGroupList();
 
 		swipeRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
 
@@ -101,9 +101,8 @@ public class GroupsActivity extends BaseActivity {
 			    MainActivity.asyncFetchGroupsFromServer();
 			}
 		});
-		
-		groupAdapter = new GroupAdapter(this, 1, grouplist);
-		groupListView.setAdapter(groupAdapter);
+
+
 		groupListView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -151,6 +150,12 @@ public class GroupsActivity extends BaseActivity {
 		refresh();
 		registerGroupChangedReceiver();
 	}
+
+    private void initData() {
+        grouplist = SuperWeChatApplication.getInstance().getGroupList();
+        groupAdapter = new GroupAdapter(this, 1, grouplist);
+        groupListView.setAdapter(groupAdapter);
+    }
 
     private void initView() {
         groupListView = (ListView) findViewById(R.id.list);
