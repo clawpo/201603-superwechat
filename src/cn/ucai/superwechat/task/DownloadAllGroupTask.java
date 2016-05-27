@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.volley.Response;
-import com.easemob.util.HanziToPinyin;
 
 import java.util.ArrayList;
 
@@ -56,17 +55,17 @@ public class DownloadAllGroupTask extends BaseActivity {
                             SuperWeChatApplication.getInstance().getGroupList();
                     groupList.clear();
                     groupList.addAll(list);
-                    for (Group group:groupList){
-                        String groupName = group.getMGroupName();
-                        String header = "";
-
-                        for(int i=0;i<groupName.length();i++){
-                            String s = groupName.substring(i,i+1);
-                            header = header + HanziToPinyin.getInstance()
-                                    .get(s).get(0).target.toLowerCase();
-                        }
-                        group.setHeader(header);
-                    }
+//                    for (Group group:groupList){
+//                        String groupName = group.getMGroupName();
+//                        String header = "";
+//
+//                        for(int i=0;i<groupName.length();i++){
+//                            String s = groupName.substring(i,i+1);
+//                            header = header + HanziToPinyin.getInstance()
+//                                    .get(s).get(0).target.toLowerCase();
+//                        }
+//                        group.setHeader(header);
+//                    }
                     mContext.sendStickyBroadcast(new Intent("update_group_list"));
                 }
             }
