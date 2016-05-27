@@ -314,6 +314,7 @@ public class ChatAllHistoryFragment extends Fragment implements View.OnClickList
 	private void registerContactListChangedReceiver(){
 		mContactListChangedReceiver = new ContactListChangedReceiver();
 		IntentFilter filter = new IntentFilter("update_contact_list");
+		filter.addAction("update_group_list");
 		getActivity().registerReceiver(mContactListChangedReceiver,filter);
 	}
 
