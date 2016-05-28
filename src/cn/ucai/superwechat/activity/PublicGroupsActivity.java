@@ -34,27 +34,25 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.easemob.chat.EMCursorResult;
-import com.easemob.chat.EMGroupInfo;
-import com.easemob.chat.EMGroupManager;
-import com.easemob.exceptions.EaseMobException;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.bean.Group;
 
 public class PublicGroupsActivity extends BaseActivity {
 	private ProgressBar pb;
 	private ListView listView;
 	private GroupsAdapter adapter;
 	
-	private List<EMGroupInfo> groupsList;
+	private ArrayList<Group> groupsList;
 	private boolean isLoading;
 	private boolean isFirstLoading = true;
 	private boolean hasMoreData = true;
 	private String cursor;
 	private final int pagesize = 20;
+    private int pageId = 0;
     private LinearLayout footLoadingLayout;
     private ProgressBar footLoadingPB;
     private TextView footLoadingText;
@@ -65,7 +63,7 @@ public class PublicGroupsActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_public_groups);
-		groupsList = new ArrayList<EMGroupInfo>();
+		groupsList = new ArrayList<Group>();
         initView();
         //获取及显示数据
         loadAndShowData();
@@ -138,18 +136,24 @@ public class PublicGroupsActivity extends BaseActivity {
             public void run() {
                 try {
                     isLoading = true;
-                    final EMCursorResult<EMGroupInfo> result = EMGroupManager.getInstance().getPublicGroupsFromServer(pagesize, cursor);
+                    ArrayList<Group> publicGroupList = SuperWeChatApplication.getInstance().getPublicGroupList();
+//                    for(Group group: publicGroupList){
+//                        if(!groupsList.contains(group)) {
+//                            groupsList.add(group);
+//                        }
+//                    }
+//                    final EMCursorResult<Group> result = EMGroupManager.getInstance().getPublicGroupsFromServer(pagesize, cursor);
                     //获取group list
-                    final List<EMGroupInfo> returnGroups = result.getData();
-                    runOnUiThread(new Runnable() {
-
-                        public void run() {
+//                    final List<Group> returnGroups = result.getData();
+//                    runOnUiThread(new Runnable() {
+//
+//                        public void run() {
                             searchBtn.setVisibility(View.VISIBLE);
-                            groupsList.addAll(returnGroups);
-                            if(returnGroups.size() != 0){
+                            groupsList.addAll(publicGroupList);
+                            if(publicGroupList.size() != 0){
                                 //获取cursor
-                                cursor = result.getCursor();
-                                if(returnGroups.size() == pagesize)
+//                                cursor = result.getCursor();
+                                if(groupsList.size() < publicGroupList.size())
                                     footLoadingLayout.setVisibility(View.VISIBLE);
                             }
                             if(isFirstLoading){
@@ -159,7 +163,7 @@ public class PublicGroupsActivity extends BaseActivity {
                                 adapter = new GroupsAdapter(PublicGroupsActivity.this, 1, groupsList);
                                 listView.setAdapter(adapter);
                             }else{
-                                if(returnGroups.size() < pagesize){
+                                if(groupsList.size() < (pageId+1)*pagesize){
                                     hasMoreData = false;
                                     footLoadingLayout.setVisibility(View.VISIBLE);
                                     footLoadingPB.setVisibility(View.GONE);
@@ -168,9 +172,9 @@ public class PublicGroupsActivity extends BaseActivity {
                                 adapter.notifyDataSetChanged();
                             }
                             isLoading = false;
-                        }
-                    });
-                } catch (EaseMobException e) {
+//                        }
+//                    });
+                } catch (Exception e) {
                     e.printStackTrace();
                     runOnUiThread(new Runnable() {
                         public void run() {
@@ -203,11 +207,11 @@ public class PublicGroupsActivity extends BaseActivity {
 	 * adapter
 	 *
 	 */
-	private class GroupsAdapter extends ArrayAdapter<EMGroupInfo> {
+	private class GroupsAdapter extends ArrayAdapter<Group> {
 
 		private LayoutInflater inflater;
 
-		public GroupsAdapter(Context context, int res, List<EMGroupInfo> groups) {
+		public GroupsAdapter(Context context, int res, List<Group> groups) {
 			super(context, res, groups);
 			this.inflater = LayoutInflater.from(context);
 		}
@@ -218,7 +222,7 @@ public class PublicGroupsActivity extends BaseActivity {
 				convertView = inflater.inflate(R.layout.row_group, null);
 			}
 
-			((TextView) convertView.findViewById(R.id.name)).setText(getItem(position).getGroupName());
+			((TextView) convertView.findViewById(R.id.name)).setText(getItem(position).getMGroupName());
 
 			return convertView;
 		}
