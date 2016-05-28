@@ -26,7 +26,7 @@ import android.widget.AbsListView;
 import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -34,12 +34,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.toolbox.NetworkImageView;
+
 import java.util.ArrayList;
-import java.util.List;
 
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.utils.UserUtils;
 
 public class PublicGroupsActivity extends BaseActivity {
 	private ProgressBar pb;
@@ -131,9 +133,9 @@ public class PublicGroupsActivity extends BaseActivity {
 	}
 	
 	private void loadAndShowData(){
-	    new Thread(new Runnable() {
-
-            public void run() {
+//	    new Thread(new Runnable() {
+//
+//            public void run() {
                 try {
                     isLoading = true;
                     ArrayList<Group> publicGroupList = SuperWeChatApplication.getInstance().getPublicGroupList();
@@ -185,8 +187,8 @@ public class PublicGroupsActivity extends BaseActivity {
                         }
                     });
                 }
-            }
-        }).start();
+//            }
+//        }).start();
 	}
 
     PublicGroupChangedReceiver mPublicGroupChangedReceiver;
@@ -207,24 +209,42 @@ public class PublicGroupsActivity extends BaseActivity {
 	 * adapter
 	 *
 	 */
-	private class GroupsAdapter extends ArrayAdapter<Group> {
+	private class GroupsAdapter extends BaseAdapter {
 
 		private LayoutInflater inflater;
+        ArrayList<Group> mGroupList;
 
-		public GroupsAdapter(Context context, int res, List<Group> groups) {
-			super(context, res, groups);
+		public GroupsAdapter(Context context, int res, ArrayList<Group> groups) {
 			this.inflater = LayoutInflater.from(context);
+            mGroupList = groups;
 		}
 
-		@Override
+        @Override
+        public int getCount() {
+            return mGroupList!=null?mGroupList.size():0;
+        }
+
+        @Override
+        public Group getItem(int position) {
+            return mGroupList.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			if (convertView == null) {
 				convertView = inflater.inflate(R.layout.row_group, null);
 			}
 
-			((TextView) convertView.findViewById(R.id.name)).setText(getItem(position).getMGroupName());
+            Group group = getItem(position);
+            ((TextView) convertView.findViewById(R.id.name)).setText(group.getMGroupName());
+            UserUtils.setGroupBeanAvatar(group.getMGroupHxid(),((NetworkImageView) convertView.findViewById(R.id.avatar)));
 
-			return convertView;
+            return convertView;
 		}
 	}
 	
