@@ -182,6 +182,8 @@ public interface I {
 	/** 客户端发送的创建群组请求 */
 	String REQUEST_CREATE_GROUP			 			= 		"create_group";
 	/** 客户端发送的添加群成员请求 */
+	String REQUEST_ADD_GROUP_MEMBER_BY_USERNAME		= 		"add_group_member_by_username";
+	/** 客户端发送的添加群成员请求 */
 	String REQUEST_ADD_GROUP_MEMBER 				= 		"add_group_member";
 	/** 客户端发送的添加多个群成员请求 */
 	String REQUEST_ADD_GROUP_MEMBERS		 		= 		"add_group_members";

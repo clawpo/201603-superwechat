@@ -27,15 +27,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
 
 import java.util.List;
 
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.activity.NewFriendsMsgActivity;
+import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.data.ApiParams;
+import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.db.InviteMessgeDao;
 import cn.ucai.superwechat.domain.InviteMessage;
+import cn.ucai.superwechat.task.DownloadAllGroupMembersTask;
 import cn.ucai.superwechat.utils.UserUtils;
 
 public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
@@ -152,8 +159,15 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 				try {
 					if(msg.getGroupId() == null) //同意好友请求
 						EMChatManager.getInstance().acceptInvitation(msg.getFrom());
-					else //同意加群申请
-					    EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
+					else { //同意加群申请
+                        EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
+                        String path = new ApiParams()
+                                .with(I.Member.USER_NAME,msg.getFrom())
+                                .with(I.Member.GROUP_HX_ID,msg.getGroupId())
+                                .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER_BY_USERNAME);
+                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Group>(path,Group.class,
+                                responseAddMemberListener(),((NewFriendsMsgActivity) context).errorListener()));
+                    }
 					((Activity) context).runOnUiThread(new Runnable() {
 
 						@Override
@@ -185,7 +199,18 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 		}).start();
 	}
 
-	private static class ViewHolder {
+    private Response.Listener<Group> responseAddMemberListener() {
+        return new Response.Listener<Group>() {
+            @Override
+            public void onResponse(Group group) {
+                if(group!=null && group.isResult()){
+                    new DownloadAllGroupMembersTask(context,group.getMGroupId()+"").execute();
+                }
+            }
+        };
+    }
+
+    private static class ViewHolder {
 		NetworkImageView avator;
 		TextView name;
 		TextView reason;
