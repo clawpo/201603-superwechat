@@ -19,6 +19,7 @@ import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.Contact;
 import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.Member;
 import cn.ucai.superwechat.bean.User;
 import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.domain.EMUser;
@@ -120,6 +121,33 @@ public class UserUtils {
     	}else{
     		textView.setText(username);
     	}
+    }
+
+    public static void setGroupMemberNick(String hxid, String username,TextView textView){
+        if(hxid!=null && username!=null){
+            Member groupMember = getGroupMember(hxid, username);
+            if(groupMember!=null){
+                if(groupMember.getMUserNick()!=null){
+                    textView.setText(groupMember.getMUserNick());
+                }else if(groupMember.getMMemberUserName()!=null){
+                    textView.setText(groupMember.getMMemberUserName());
+                }else{
+                    textView.setText(username);
+                }
+            }
+        }
+    }
+
+    private static Member getGroupMember(String hxid, String username) {
+        ArrayList<Member> members = SuperWeChatApplication.getInstance().getGroupMembers().get(hxid);
+        if(members!=null){
+            for (Member member:members){
+                if(member.getMMemberUserName().equals(username)){
+                    return member;
+                }
+            }
+        }
+        return null;
     }
 
     public static void setUserBeanNick(String username,TextView textView) {

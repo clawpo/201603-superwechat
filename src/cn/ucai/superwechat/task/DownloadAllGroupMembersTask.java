@@ -52,6 +52,7 @@ public class DownloadAllGroupMembersTask extends BaseActivity {
         return new Response.Listener<Member[]>(){
             @Override
             public void onResponse(Member[] userList) {
+                Log.e(TAG,"responseDownloadGroupMembersListener,userList="+userList);
                 if(userList==null){
                     return;
                 }
