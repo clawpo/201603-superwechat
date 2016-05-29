@@ -23,12 +23,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.toolbox.NetworkImageView;
-import com.easemob.chat.EMChatManager;
-import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
 
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.Group;
 import cn.ucai.superwechat.utils.UserUtils;
 
@@ -38,7 +37,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 	private NetworkImageView niv_avatar;
 	private TextView tv_name;
 	private TextView tv_introduction;
-	private EMGroup group;
+	private Group group;
 	private String groupid;
 	private ProgressBar progressBar;
 
@@ -62,8 +61,8 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 		    group = PublicGroupsSeachActivity.searchedGroup;
 		    if(group == null)
 		        return;
-		    groupname = group.getGroupName();
-		    groupid = group.getGroupId();
+		    groupname = group.getMGroupName();
+		    groupid = group.getMGroupHxid();
 		}
 		
 		tv_name.setText(groupname);
@@ -73,31 +72,6 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 		    showGroupDetail();
 		    return;
 		}
-		new Thread(new Runnable() {
-
-			public void run() {
-				//从服务器获取详情
-				try {
-					group = EMGroupManager.getInstance().getGroupFromServer(groupid);
-					runOnUiThread(new Runnable() {
-						public void run() {
-							showGroupDetail();
-						}
-					});
-				} catch (final EaseMobException e) {
-					e.printStackTrace();
-					final String st1 = getResources().getString(R.string.Failed_to_get_group_chat_information);
-					runOnUiThread(new Runnable() {
-						public void run() {
-							progressBar.setVisibility(View.INVISIBLE);
-							Toast.makeText(GroupSimpleDetailActivity.this, st1+e.getMessage(), Toast.LENGTH_LONG).show();
-						}
-					});
-				}
-				
-			}
-		}).start();
-		
 	}
 	
 	//加入群聊
@@ -116,7 +90,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 			public void run() {
 				try {
 					//如果是membersOnly的群，需要申请加入，不能直接join
-					if(group.isMembersOnly()){
+					if(group.getMGroupAllowInvites()){
 					    EMGroupManager.getInstance().applyJoinToGroup(groupid, st2);
 					}else{
 					    EMGroupManager.getInstance().joinGroup(groupid);
@@ -124,7 +98,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 					runOnUiThread(new Runnable() {
 						public void run() {
 							pd.dismiss();
-							if(group.isMembersOnly())
+							if(group.getMGroupAllowInvites())
 								Toast.makeText(GroupSimpleDetailActivity.this, st3, Toast.LENGTH_SHORT).show();
 							else
 								Toast.makeText(GroupSimpleDetailActivity.this, st4, Toast.LENGTH_SHORT).show();
@@ -147,12 +121,12 @@ public class GroupSimpleDetailActivity extends BaseActivity {
      private void showGroupDetail() {
          progressBar.setVisibility(View.INVISIBLE);
          //获取详情成功，并且自己不在群中，才让加入群聊按钮可点击
-         if(!group.getMembers().contains(EMChatManager.getInstance().getCurrentUser()))
+         if(!SuperWeChatApplication.getInstance().getGroupList().contains(group))
              btn_add_group.setEnabled(true);
          UserUtils.setGroupBeanAvatar(groupid,niv_avatar);
-         tv_name.setText(group.getGroupName());
-         tv_admin.setText(group.getOwner());
-         tv_introduction.setText(group.getDescription());
+         tv_name.setText(group.getMGroupName());
+         tv_admin.setText(group.getMGroupOwner());
+         tv_introduction.setText(group.getMGroupDescription());
      }
 	
 	public void back(View view){

@@ -211,9 +211,11 @@ public interface I {
 	String REQUEST_FIND_GROUP_BY_ID					= 		"find_group_by_group_id";
 	/** 客户端发送的根据群组环信id查找群组请求 */
 	String REQUEST_FIND_GROUP_BY_HXID 				= 		"find_group_by_group_hxid";
+	/** 客户端发送的根据群组环信id查找公开群组请求 */
+	String REQUEST_FIND_PUBLIC_GROUP_BY_HXID 		= 		"find_public_group_by_group_hxid";
     String DOWNLOAD_USER_AVATAR_URL                 =       SuperWeChatApplication.SERVER_ROOT
             +  "?" + KEY_REQUEST + "=" + REQUEST_DOWNLOAD_AVATAR + "&" + AVATAR_TYPE + "=";
     /** 客户端发送的根据根据群组环信id下载群组头像的请求 */
     String DOWNLOAD_GROUP_AVATAR_URL                 =       SuperWeChatApplication.SERVER_ROOT
-            +  "?" + KEY_REQUEST + "=" + REQUEST_DOWNLOAD_GROUP_AVATAR + "&" + AVATAR_TYPE + "=";
+            +  "?" + KEY_REQUEST + "=" + REQUEST_DOWNLOAD_GROUP_AVATAR + "&time=123" + "&" + AVATAR_TYPE + "=";
 }
