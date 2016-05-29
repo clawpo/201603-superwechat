@@ -68,8 +68,6 @@ import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.Contact;
-import cn.ucai.superwechat.bean.Group;
-import cn.ucai.superwechat.bean.User;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.db.EMUserDao;
@@ -885,18 +883,6 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 		@Override
 		public void onApplicationAccept(String groupId, String groupName, String accepter) {
-			User user = SuperWeChatApplication.getInstance().getUser();
-            try {
-                String path = new ApiParams()
-                    .with(I.Member.USER_ID,user.getMUserId()+"")
-                    .with(I.Member.USER_NAME,user.getMUserName())
-                    .with(I.Member.GROUP_HX_ID,groupId)
-                    .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER);
-                executeRequest(new GsonRequest<Group>(path,Group.class,
-                        responseAddGroupMemberListener(),errorListener()));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
             String st4 = getResources().getString(R.string.Agreed_to_your_group_chat_application);
 			// 加群申请被同意
 			EMMessage msg = EMMessage.createReceiveMessage(Type.TXT);
@@ -922,21 +908,6 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 				}
 			});
 		}
-
-        private Response.Listener<Group> responseAddGroupMemberListener() {
-            return new Response.Listener<Group>() {
-                @Override
-                public void onResponse(Group group) {
-                    if(group!=null && group.isResult()){
-                        ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
-                        if(!groupList.contains(group)) {
-                            groupList.add(group);
-                            sendStickyBroadcast(new Intent("update_group_list"));
-                        }
-                    }
-                }
-            };
-        }
 
         @Override
 		public void onApplicationDeclined(String groupId, String groupName, String decliner, String reason) {
