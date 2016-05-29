@@ -22,13 +22,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
 
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.data.ApiParams;
+import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.utils.UserUtils;
 
 public class GroupSimpleDetailActivity extends BaseActivity {
@@ -72,7 +76,31 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 		    showGroupDetail();
 		    return;
 		}
-	}
+        try {
+            String path = new ApiParams()
+                    .with(I.Group.HX_ID,groupid)
+                    .getRequestUrl(I.REQUEST_FIND_PUBLIC_GROUP_BY_HXID);
+            executeRequest(new GsonRequest<Group>(path,Group.class,
+                    responseFindGroupListener(),errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Response.Listener<Group> responseFindGroupListener() {
+        return new Response.Listener<Group>() {
+            @Override
+            public void onResponse(Group g) {
+                if(g!=null){
+                    group = g;
+                    showGroupDetail();
+                }else{
+                    Toast.makeText(getApplicationContext(), getResources().getString(R.string.group_not_existed), Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+        };
+    }
 	
 	//加入群聊
 	public void addToGroup(View view){
