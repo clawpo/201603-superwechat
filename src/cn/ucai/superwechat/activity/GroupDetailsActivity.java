@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,6 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.Member;
 import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.widget.ExpandGridView;
 
@@ -90,6 +94,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	private RelativeLayout changeGroupNameLayout;
     private RelativeLayout idLayout;
     private TextView idText;
+	Group mGroup;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +102,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	    
 	    // 获取传过来的groupid
         groupId = getIntent().getStringExtra("groupId");
+        mGroup = (Group) getIntent().getSerializableExtra("group");
+        Log.e(TAG,"groupId="+groupId+",mGroup="+mGroup);
         group = EMGroupManager.getInstance().getGroup(groupId);
 
         // we are not supposed to show the group if we don't find the group

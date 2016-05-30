@@ -105,6 +105,7 @@ import cn.ucai.superwechat.adapter.MessageAdapter;
 import cn.ucai.superwechat.adapter.VoicePlayClickListener;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.applib.model.GroupRemoveListener;
+import cn.ucai.superwechat.bean.Group;
 import cn.ucai.superwechat.bean.Member;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
@@ -214,6 +215,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	public EMGroup group;
 	public EMChatRoom room;
 	public boolean isRobot;
+    Group mGroup;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -534,6 +536,19 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
                 e.printStackTrace();
             }
         }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
+                for (Group g:groupList){
+                    if (g.getMGroupHxid().equals(toChatUsername)){
+                        mGroup = g;
+                        Log.e(TAG,"mgroup="+mGroup);
+                    }
+                }
+            }
+        }).start();
+
         group = EMGroupManager.getInstance().getGroup(toChatUsername);
         
         if (group != null){
@@ -1283,7 +1298,9 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 			return;
 		}
 		if(chatType == CHATTYPE_GROUP){
-			startActivityForResult((new Intent(this, GroupDetailsActivity.class).putExtra("groupId", toChatUsername)),
+			startActivityForResult((new Intent(this, GroupDetailsActivity.class)
+					.putExtra("groupId", toChatUsername)
+                    .putExtra("group",mGroup)),
 					REQUEST_CODE_GROUP_DETAIL);
 		}else{
 			startActivityForResult((new Intent(this, ChatRoomDetailsActivity.class).putExtra("roomId", toChatUsername)),
