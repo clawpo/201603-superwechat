@@ -95,6 +95,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
     private RelativeLayout idLayout;
     private TextView idText;
 	Group mGroup;
+    ArrayList<Member> groupMembers;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +105,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
         groupId = getIntent().getStringExtra("groupId");
         mGroup = (Group) getIntent().getSerializableExtra("group");
         Log.e(TAG,"groupId="+groupId+",mGroup="+mGroup);
+        groupMembers = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
         group = EMGroupManager.getInstance().getGroup(groupId);
 
         // we are not supposed to show the group if we don't find the group
@@ -114,26 +116,26 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
         
 		setContentView(R.layout.activity_group_details);
 		instance = this;
-		st = getResources().getString(cn.ucai.superwechat.R.string.people);
-		clearAllHistory = (RelativeLayout) findViewById(cn.ucai.superwechat.R.id.clear_all_history);
-		userGridview = (ExpandGridView) findViewById(cn.ucai.superwechat.R.id.gridview);
-		loadingPB = (ProgressBar) findViewById(cn.ucai.superwechat.R.id.progressBar);
-		exitBtn = (Button) findViewById(cn.ucai.superwechat.R.id.btn_exit_grp);
-		deleteBtn = (Button) findViewById(cn.ucai.superwechat.R.id.btn_exitdel_grp);
-		blacklistLayout = (RelativeLayout) findViewById(cn.ucai.superwechat.R.id.rl_blacklist);
-		changeGroupNameLayout = (RelativeLayout) findViewById(cn.ucai.superwechat.R.id.rl_change_group_name);
-		idLayout = (RelativeLayout) findViewById(cn.ucai.superwechat.R.id.rl_group_id);
+		st = getResources().getString(R.string.people);
+		clearAllHistory = (RelativeLayout) findViewById(R.id.clear_all_history);
+		userGridview = (ExpandGridView) findViewById(R.id.gridview);
+		loadingPB = (ProgressBar) findViewById(R.id.progressBar);
+		exitBtn = (Button) findViewById(R.id.btn_exit_grp);
+		deleteBtn = (Button) findViewById(R.id.btn_exitdel_grp);
+		blacklistLayout = (RelativeLayout) findViewById(R.id.rl_blacklist);
+		changeGroupNameLayout = (RelativeLayout) findViewById(R.id.rl_change_group_name);
+		idLayout = (RelativeLayout) findViewById(R.id.rl_group_id);
 		idLayout.setVisibility(View.VISIBLE);
-		idText = (TextView) findViewById(cn.ucai.superwechat.R.id.tv_group_id_value);
+		idText = (TextView) findViewById(R.id.tv_group_id_value);
 		
-		rl_switch_block_groupmsg = (RelativeLayout) findViewById(cn.ucai.superwechat.R.id.rl_switch_block_groupmsg);
+		rl_switch_block_groupmsg = (RelativeLayout) findViewById(R.id.rl_switch_block_groupmsg);
 
-		iv_switch_block_groupmsg = (ImageView) findViewById(cn.ucai.superwechat.R.id.iv_switch_block_groupmsg);
-		iv_switch_unblock_groupmsg = (ImageView) findViewById(cn.ucai.superwechat.R.id.iv_switch_unblock_groupmsg);
+		iv_switch_block_groupmsg = (ImageView) findViewById(R.id.iv_switch_block_groupmsg);
+		iv_switch_unblock_groupmsg = (ImageView) findViewById(R.id.iv_switch_unblock_groupmsg);
 
 		rl_switch_block_groupmsg.setOnClickListener(this);
 
-		Drawable referenceDrawable = getResources().getDrawable(cn.ucai.superwechat.R.drawable.smiley_add_btn);
+		Drawable referenceDrawable = getResources().getDrawable(R.drawable.smiley_add_btn);
 		referenceWidth = referenceDrawable.getIntrinsicWidth();
 		referenceHeight = referenceDrawable.getIntrinsicHeight();
 
@@ -151,13 +153,13 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			exitBtn.setVisibility(View.GONE);
 			deleteBtn.setVisibility(View.VISIBLE);
 		}
-		
-		((TextView) findViewById(cn.ucai.superwechat.R.id.group_name)).setText(group.getGroupName() + "(" + group.getAffiliationsCount() + st);
+		String groupDetailTitle = mGroup.getMGroupName()+"("+mGroup.getMGroupAffiliationsCount()+")";
+		((TextView) findViewById(R.id.group_name)).setText(groupDetailTitle);
 		
 		List<String> members = new ArrayList<String>();
 		members.addAll(group.getMembers());
 		
-		adapter = new GridAdapter(this, cn.ucai.superwechat.R.layout.grid, members);
+		adapter = new GridAdapter(this, R.layout.grid, members);
 		userGridview.setAdapter(adapter);
 
 		// 保证每次进详情看到的都是最新的group
@@ -192,17 +194,17 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		String st1 = getResources().getString(cn.ucai.superwechat.R.string.being_added);
-		String st2 = getResources().getString(cn.ucai.superwechat.R.string.is_quit_the_group_chat);
-		String st3 = getResources().getString(cn.ucai.superwechat.R.string.chatting_is_dissolution);
-		String st4 = getResources().getString(cn.ucai.superwechat.R.string.are_empty_group_of_news);
-		String st5 = getResources().getString(cn.ucai.superwechat.R.string.is_modify_the_group_name);
-		final String st6 = getResources().getString(cn.ucai.superwechat.R.string.Modify_the_group_name_successful);
-		final String st7 = getResources().getString(cn.ucai.superwechat.R.string.change_the_group_name_failed_please);
-		String st8 = getResources().getString(cn.ucai.superwechat.R.string.Are_moving_to_blacklist);
-		final String st9 = getResources().getString(cn.ucai.superwechat.R.string.failed_to_move_into);
+		String st1 = getResources().getString(R.string.being_added);
+		String st2 = getResources().getString(R.string.is_quit_the_group_chat);
+		String st3 = getResources().getString(R.string.chatting_is_dissolution);
+		String st4 = getResources().getString(R.string.are_empty_group_of_news);
+		String st5 = getResources().getString(R.string.is_modify_the_group_name);
+		final String st6 = getResources().getString(R.string.Modify_the_group_name_successful);
+		final String st7 = getResources().getString(R.string.change_the_group_name_failed_please);
+		String st8 = getResources().getString(R.string.Are_moving_to_blacklist);
+		final String st9 = getResources().getString(R.string.failed_to_move_into);
 		
-		final String stsuccess = getResources().getString(cn.ucai.superwechat.R.string.Move_into_blacklist_success);
+		final String stsuccess = getResources().getString(R.string.Move_into_blacklist_success);
 		if (resultCode == RESULT_OK) {
 			if (progressDialog == null) {
 				progressDialog = new ProgressDialog(GroupDetailsActivity.this);
@@ -245,7 +247,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 							    EMGroupManager.getInstance().changeGroupName(groupId, returnData);
 								runOnUiThread(new Runnable() {
 									public void run() {
-										((TextView) findViewById(cn.ucai.superwechat.R.id.group_name)).setText(returnData + "(" + group.getAffiliationsCount()
+										((TextView) findViewById(R.id.group_name)).setText(returnData + "(" + group.getAffiliationsCount()
 												+ st);
 										progressDialog.dismiss();
 										Toast.makeText(getApplicationContext(), st6, Toast.LENGTH_SHORT).show();
@@ -323,7 +325,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	 * @param view
 	 */
 	public void exitDeleteGroup(View view) {
-		startActivityForResult(new Intent(this, ExitGroupDialog.class).putExtra("deleteToast", getString(cn.ucai.superwechat.R.string.dissolution_group_hint)),
+		startActivityForResult(new Intent(this, ExitGroupDialog.class).putExtra("deleteToast", getString(R.string.dissolution_group_hint)),
 				REQUEST_CODE_EXIT_DELETE);
 
 	}
@@ -344,7 +346,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	 *
 	 */
 	private void exitGrop() {
-		String st1 = getResources().getString(cn.ucai.superwechat.R.string.Exit_the_group_chat_failure);
+		String st1 = getResources().getString(R.string.Exit_the_group_chat_failure);
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -362,7 +364,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 					runOnUiThread(new Runnable() {
 						public void run() {
 							progressDialog.dismiss();
-							Toast.makeText(getApplicationContext(), getResources().getString(cn.ucai.superwechat.R.string.Exit_the_group_chat_failure) + " " + e.getMessage(), Toast.LENGTH_LONG).show();
+							Toast.makeText(getApplicationContext(), getResources().getString(R.string.Exit_the_group_chat_failure) + " " + e.getMessage(), Toast.LENGTH_LONG).show();
 						}
 					});
 				}
@@ -375,7 +377,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	 *
 	 */
 	private void deleteGrop() {
-		final String st5 = getResources().getString(cn.ucai.superwechat.R.string.Dissolve_group_chat_tofail);
+		final String st5 = getResources().getString(R.string.Dissolve_group_chat_tofail);
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -407,7 +409,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	 * @param newmembers
 	 */
 	private void addMembersToGroup(final String[] newmembers) {
-		final String st6 = getResources().getString(cn.ucai.superwechat.R.string.Add_group_members_fail);
+		final String st6 = getResources().getString(R.string.Add_group_members_fail);
 		new Thread(new Runnable() {
 			
 			public void run() {
@@ -422,7 +424,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 					runOnUiThread(new Runnable() {
 						public void run() {
 						    refreshMembers();
-							((TextView) findViewById(cn.ucai.superwechat.R.id.group_name)).setText(group.getGroupName() + "(" + group.getAffiliationsCount()
+							((TextView) findViewById(R.id.group_name)).setText(group.getGroupName() + "(" + group.getAffiliationsCount()
 									+ st);
 							progressDialog.dismiss();
 						}
@@ -441,10 +443,10 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 
 	@Override
 	public void onClick(View v) {
-		String st6 = getResources().getString(cn.ucai.superwechat.R.string.Is_unblock);
-		final String st7 = getResources().getString(cn.ucai.superwechat.R.string.remove_group_of);
+		String st6 = getResources().getString(R.string.Is_unblock);
+		final String st7 = getResources().getString(R.string.remove_group_of);
 		switch (v.getId()) {
-		case cn.ucai.superwechat.R.id.rl_switch_block_groupmsg: // 屏蔽群组
+		case R.id.rl_switch_block_groupmsg: // 屏蔽群组
 			if (iv_switch_block_groupmsg.getVisibility() == View.VISIBLE) {
 				EMLog.d(TAG, "change to unblock group msg");
 				if (progressDialog == null) {
@@ -478,8 +480,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                 }).start();
 				
 			} else {
-				String st8 = getResources().getString(cn.ucai.superwechat.R.string.group_is_blocked);
-				final String st9 = getResources().getString(cn.ucai.superwechat.R.string.group_of_shielding);
+				String st8 = getResources().getString(R.string.group_is_blocked);
+				final String st9 = getResources().getString(R.string.group_of_shielding);
 				EMLog.d(TAG, "change to block group msg");
 				if (progressDialog == null) {
                     progressDialog = new ProgressDialog(GroupDetailsActivity.this);
@@ -513,8 +515,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			}
 			break;
 
-		case cn.ucai.superwechat.R.id.clear_all_history: // 清空聊天记录
-			String st9 = getResources().getString(cn.ucai.superwechat.R.string.sure_to_empty_this);
+		case R.id.clear_all_history: // 清空聊天记录
+			String st9 = getResources().getString(R.string.sure_to_empty_this);
 			Intent intent = new Intent(GroupDetailsActivity.this, AlertDialog.class);
 			intent.putExtra("cancel", true);
 			intent.putExtra("titleIsCancel", true);
@@ -522,11 +524,11 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			startActivityForResult(intent, REQUEST_CODE_CLEAR_ALL_HISTORY);
 			break;
 
-		case cn.ucai.superwechat.R.id.rl_blacklist: // 黑名单列表
+		case R.id.rl_blacklist: // 黑名单列表
 			startActivity(new Intent(GroupDetailsActivity.this, GroupBlacklistActivity.class).putExtra("groupId", groupId));
 			break;
 
-		case cn.ucai.superwechat.R.id.rl_change_group_name:
+		case R.id.rl_change_group_name:
 			startActivityForResult(new Intent(this, EditActivity.class).putExtra("data", group.getGroupName()), REQUEST_CODE_EDIT_GROUPNAME);
 			break;
 
@@ -561,19 +563,19 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			if (convertView == null) {
 			    holder = new ViewHolder();
 				convertView = LayoutInflater.from(getContext()).inflate(res, null);
-				holder.imageView = (ImageView) convertView.findViewById(cn.ucai.superwechat.R.id.iv_avatar);
-				holder.textView = (TextView) convertView.findViewById(cn.ucai.superwechat.R.id.tv_name);
-				holder.badgeDeleteView = (ImageView) convertView.findViewById(cn.ucai.superwechat.R.id.badge_delete);
+				holder.imageView = (ImageView) convertView.findViewById(R.id.iv_avatar);
+				holder.textView = (TextView) convertView.findViewById(R.id.tv_name);
+				holder.badgeDeleteView = (ImageView) convertView.findViewById(R.id.badge_delete);
 				convertView.setTag(holder);
 			}else{
 			    holder = (ViewHolder) convertView.getTag();
 			}
-			final LinearLayout button = (LinearLayout) convertView.findViewById(cn.ucai.superwechat.R.id.button_avatar);
+			final LinearLayout button = (LinearLayout) convertView.findViewById(R.id.button_avatar);
 			// 最后一个item，减人按钮
 			if (position == getCount() - 1) {
 			    holder.textView.setText("");
 				// 设置成删除按钮
-			    holder.imageView.setImageResource(cn.ucai.superwechat.R.drawable.smiley_minus_btn);
+			    holder.imageView.setImageResource(R.drawable.smiley_minus_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_minus_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限，不提供加减人按钮
 				if (!group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -586,9 +588,9 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 					} else {
 						// 正常模式
 						convertView.setVisibility(View.VISIBLE);
-						convertView.findViewById(cn.ucai.superwechat.R.id.badge_delete).setVisibility(View.INVISIBLE);
+						convertView.findViewById(R.id.badge_delete).setVisibility(View.INVISIBLE);
 					}
-					final String st10 = getResources().getString(cn.ucai.superwechat.R.string.The_delete_button_is_clicked);
+					final String st10 = getResources().getString(R.string.The_delete_button_is_clicked);
 					button.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
@@ -600,7 +602,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 				}
 			} else if (position == getCount() - 2) { // 添加群组成员按钮
 			    holder.textView.setText("");
-			    holder.imageView.setImageResource(cn.ucai.superwechat.R.drawable.smiley_add_btn);
+			    holder.imageView.setImageResource(R.drawable.smiley_add_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_add_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限
 				if (!group.isAllowInvites() && !group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -612,9 +614,9 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 						convertView.setVisibility(View.INVISIBLE);
 					} else {
 						convertView.setVisibility(View.VISIBLE);
-						convertView.findViewById(cn.ucai.superwechat.R.id.badge_delete).setVisibility(View.INVISIBLE);
+						convertView.findViewById(R.id.badge_delete).setVisibility(View.INVISIBLE);
 					}
-					final String st11 = getResources().getString(cn.ucai.superwechat.R.string.Add_a_button_was_clicked);
+					final String st11 = getResources().getString(R.string.Add_a_button_was_clicked);
 					button.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
@@ -638,14 +640,14 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 				// demo群组成员的头像都用默认头像，需由开发者自己去设置头像
 				if (isInDeleteMode) {
 					// 如果是删除模式下，显示减人图标
-					convertView.findViewById(cn.ucai.superwechat.R.id.badge_delete).setVisibility(View.VISIBLE);
+					convertView.findViewById(R.id.badge_delete).setVisibility(View.VISIBLE);
 				} else {
-					convertView.findViewById(cn.ucai.superwechat.R.id.badge_delete).setVisibility(View.INVISIBLE);
+					convertView.findViewById(R.id.badge_delete).setVisibility(View.INVISIBLE);
 				}
-				final String st12 = getResources().getString(cn.ucai.superwechat.R.string.not_delete_myself);
-				final String st13 = getResources().getString(cn.ucai.superwechat.R.string.Are_removed);
-				final String st14 = getResources().getString(cn.ucai.superwechat.R.string.Delete_failed);
-				final String st15 = getResources().getString(cn.ucai.superwechat.R.string.confirm_the_members);
+				final String st12 = getResources().getString(R.string.not_delete_myself);
+				final String st13 = getResources().getString(R.string.Are_removed);
+				final String st14 = getResources().getString(R.string.Delete_failed);
+				final String st15 = getResources().getString(R.string.confirm_the_members);
 				button.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -656,7 +658,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 								return;
 							}
 							if (!NetUtils.hasNetwork(getApplicationContext())) {
-								Toast.makeText(getApplicationContext(), getString(cn.ucai.superwechat.R.string.network_unavailable), Toast.LENGTH_SHORT).show();
+								Toast.makeText(getApplicationContext(), getString(R.string.network_unavailable), Toast.LENGTH_SHORT).show();
 								return;
 							}
 							EMLog.d("group", "remove user from group:" + username);
@@ -695,7 +697,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 										public void run() {
 											deleteDialog.dismiss();
 											refreshMembers();
-											((TextView) findViewById(cn.ucai.superwechat.R.id.group_name)).setText(group.getGroupName() + "("
+											((TextView) findViewById(R.id.group_name)).setText(group.getGroupName() + "("
 													+ group.getAffiliationsCount() + st);
 										}
 									});
@@ -749,7 +751,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 
 					runOnUiThread(new Runnable() {
 						public void run() {
-							((TextView) findViewById(cn.ucai.superwechat.R.id.group_name)).setText(group.getGroupName() + "(" + group.getAffiliationsCount()
+							((TextView) findViewById(R.id.group_name)).setText(group.getGroupName() + "(" + group.getAffiliationsCount()
 									+ ")");
 							loadingPB.setVisibility(View.INVISIBLE);
 							refreshMembers();
