@@ -82,6 +82,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 	private void initListener() {
 		Intent intent = getIntent();
 		String username = intent.getStringExtra("username");
+		String hxid = intent.getStringExtra("hxid");
 		boolean enableUpdate = intent.getBooleanExtra("setting", false);
 		if (enableUpdate) {
 			headPhotoUpdate.setVisibility(View.VISIBLE);
@@ -97,9 +98,14 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 			UserUtils.setCurrentUserBeanNick(tvNickName);
 			UserUtils.setCurrentUserAvatar(headAvatar);
 		} else {
+            if(hxid!=null){
+                UserUtils.setGroupBeanAvatar(hxid,headAvatar);
+                UserUtils.setGroupMemberNick(hxid,username,tvNickName);
+            }else{
+                UserUtils.setUserBeanNick(username, tvNickName);
+                UserUtils.setUserBeanAvatar(username, headAvatar);
+            }
 			tvUsername.setText(username);
-			UserUtils.setUserBeanNick(username, tvNickName);
-			UserUtils.setUserBeanAvatar(username, headAvatar);
 //			asyncFetchUserInfo(username);
 		}
 	}
