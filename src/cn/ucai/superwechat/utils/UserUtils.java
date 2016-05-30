@@ -92,6 +92,11 @@ public class UserUtils {
         return I.DOWNLOAD_USER_AVATAR_URL + username;
     }
 
+    public static void setUserAvatarByUserName(String username,NetworkImageView imageView) {
+        if(username==null)return;
+        setUserAvatar(getAvatarPath(username), imageView);
+    }
+
     /**
      * 设置当前用户头像
      */
