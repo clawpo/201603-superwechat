@@ -14,8 +14,10 @@
 package cn.ucai.superwechat.activity;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -249,8 +251,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 							    EMGroupManager.getInstance().changeGroupName(groupId, returnData);
 								runOnUiThread(new Runnable() {
 									public void run() {
-										((TextView) findViewById(R.id.group_name)).setText(returnData + "(" + group.getAffiliationsCount()
-												+ st);
+                                        String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
+                                        ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
 										progressDialog.dismiss();
 										Toast.makeText(getApplicationContext(), st6, Toast.LENGTH_SHORT).show();
 									}
@@ -303,13 +305,15 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	}
 
 	private void refreshMembers(){
-        String groupDetailTitle = mGroup.getMGroupName()+"("+mGroup.getMGroupAffiliationsCount()+")";
-        ((TextView) findViewById(R.id.group_name)).setText(groupDetailTitle);
-	    adapter.clear();
+        String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
+        ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
+        ArrayList<Member> list = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
 
-        ArrayList<Member> members = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
-//        members.addAll(group.getMembers());
-        Log.e(TAG,"refreshMembers,members="+members);
+        Log.e(TAG,"list="+list);
+	    adapter.clear();
+        Log.e(TAG,"list="+list);
+        ArrayList<Member> members = new ArrayList<Member>();
+        members.addAll(list);
         adapter.addAll(members);
         
         adapter.notifyDataSetChanged();
@@ -582,7 +586,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			if (position == getCount() - 1) {
 			    holder.textView.setText("");
 				// 设置成删除按钮
-			    holder.imageView.setImageResource(R.drawable.smiley_minus_btn);
+			    holder.imageView.setDefaultImageResId(R.drawable.smiley_minus_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_minus_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限，不提供加减人按钮
 				if (!group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -609,7 +613,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 				}
 			} else if (position == getCount() - 2) { // 添加群组成员按钮
 			    holder.textView.setText("");
-			    holder.imageView.setImageResource(R.drawable.smiley_add_btn);
+			    holder.imageView.setDefaultImageResId(R.drawable.smiley_add_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_add_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限
 				if (!group.isAllowInvites() && !group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -829,6 +833,9 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	protected void onDestroy() {
 		super.onDestroy();
 		instance = null;
+        if(mReceiver!=null){
+            unregisterReceiver(mReceiver);
+        }
 	}
 	
 	private static class ViewHolder{
@@ -836,5 +843,18 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 	    TextView textView;
 	    ImageView badgeDeleteView;
 	}
+    class GroupMemberReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            refreshMembers();
+        }
+    }
+    GroupMemberReceiver mReceiver;
+    private void registerGroupMemberUpdate(){
+        mReceiver = new GroupMemberReceiver();
+        IntentFilter inflater = new IntentFilter("update_group_member");
+        registerReceiver(mReceiver,inflater);
+    }
 
 }
