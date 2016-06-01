@@ -53,12 +53,14 @@ import java.util.List;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
+import cn.ucai.superwechat.bean.Contact;
 import cn.ucai.superwechat.bean.Group;
 import cn.ucai.superwechat.bean.Member;
 import cn.ucai.superwechat.bean.Message;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.RequestManager;
+import cn.ucai.superwechat.task.DownloadAllGroupMembersTask;
 import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.utils.Utils;
 import cn.ucai.superwechat.widget.ExpandGridView;
@@ -199,7 +201,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 		clearAllHistory.setOnClickListener(this);
 		blacklistLayout.setOnClickListener(this);
 		changeGroupNameLayout.setOnClickListener(this);
-
+        registerGroupMemberUpdate();
 	}
 
 	@Override
@@ -224,10 +226,10 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			}
 			switch (requestCode) {
 			case REQUEST_CODE_ADD_USER:// 添加群成员
-				final String[] newmembers = data.getStringArrayExtra("newmembers");
+				final Contact[] newmembers = (Contact[]) data.getSerializableExtra("newmembers");
 				progressDialog.setMessage(st1);
 				progressDialog.show();
-				addMembersToGroup(newmembers);
+                addMembersToServer(newmembers);
 				break;
 			case REQUEST_CODE_EXIT: // 退出群
 				progressDialog.setMessage(st2);
@@ -445,7 +447,50 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 		}).start();
 	}
 
-	/**
+    private void addMembersToServer(final Contact[] contacts){
+        String[] memberNames = null;
+        String userIds="";
+        String userNames="";
+        if (contacts != null && contacts.length > 0) {
+            memberNames = new String[contacts.length];
+            for (int i = 0; i < contacts.length; i++) {
+                memberNames[i] = contacts[i].getMContactCname();
+                userIds+=contacts[i].getMContactCid()+",";
+                userNames+=contacts[i].getMContactCname()+",";
+            }
+        }
+        try {
+            String path = new ApiParams()
+                    .with(I.Member.USER_ID,userIds)
+                    .with(I.Member.USER_NAME,userNames)
+                    .with(I.Member.GROUP_HX_ID,groupId)
+                    .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBERS);
+            executeRequest(new GsonRequest<Message>(path,Message.class,
+                    responseAddGroupMemberListener(memberNames),errorListener()));
+        } catch (Exception e) {
+            final String st6 = getResources().getString(R.string.Add_group_members_fail);
+            e.printStackTrace();
+            progressDialog.dismiss();
+            Toast.makeText(getApplicationContext(), st6 + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private Response.Listener<Message> responseAddGroupMemberListener(final String[] newmembers) {
+        return new Response.Listener<Message>() {
+            @Override
+            public void onResponse(Message msg) {
+                if(msg.isResult()){
+                    addMembersToGroup(newmembers);
+                }else{
+                    final String st6 = getResources().getString(R.string.Add_group_members_fail);
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), st6, Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+    }
+
+    /**
 	 * 增加群成员
 	 * 
 	 * @param newmembers
@@ -465,7 +510,9 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 					}
 					runOnUiThread(new Runnable() {
 						public void run() {
+                            new DownloadAllGroupMembersTask(GroupDetailsActivity.this,groupId).execute();
                             Log.e(TAG,"addMembersToGroup");
+                            mGroup.setMGroupAffiliationsCount(mGroup.getMGroupAffiliationsCount()+newmembers.length);
 						    refreshMembers();
 							progressDialog.dismiss();
 						}
@@ -780,6 +827,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                                             ArrayList<Member> list = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
                                             if(list!=null){
                                                 list.remove(user);
+                                                mGroup.setMGroupAffiliationsCount(mGroup.getMGroupAffiliationsCount()-1);
                                             }
                                             refreshMembers();
 										}
