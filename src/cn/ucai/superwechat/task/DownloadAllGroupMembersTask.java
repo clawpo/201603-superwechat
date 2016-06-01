@@ -36,8 +36,8 @@ public class DownloadAllGroupMembersTask extends BaseActivity {
     private void initPath(){
         try {
             path = new ApiParams()
-                    .with(I.Member.GROUP_ID, groupId)
-                    .getRequestUrl(I.REQUEST_DOWNLOAD_GROUP_MEMBERS);
+                    .with(I.Member.GROUP_HX_ID, groupId)
+                    .getRequestUrl(I.REQUEST_DOWNLOAD_GROUP_MEMBERS_BY_HXID);
         } catch (Exception e) {
             e.printStackTrace();
         }
