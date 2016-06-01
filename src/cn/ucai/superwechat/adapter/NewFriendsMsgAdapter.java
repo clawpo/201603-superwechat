@@ -31,6 +31,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
+import com.easemob.exceptions.EaseMobException;
 
 import java.util.List;
 
@@ -38,6 +39,7 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.activity.NewFriendsMsgActivity;
 import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.User;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.db.InviteMessgeDao;
@@ -49,6 +51,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 
 	private Context context;
 	private InviteMessgeDao messgeDao;
+    ProgressDialog pd;
 
 	public NewFriendsMsgAdapter(Context context, int textViewResourceId, List<InviteMessage> objects) {
 		super(context, textViewResourceId, objects);
@@ -133,10 +136,30 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 
 			// 设置用户头像
             UserUtils.setUserAvatar(UserUtils.getAvatarPath(msg.getFrom()),holder.avator);
-		}
+            try {
+                String path = new ApiParams()
+                        .with(I.User.USER_NAME,msg.getFrom())
+                        .getRequestUrl(I.REQUEST_FIND_USER);
+                ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<User>(path, User.class,
+                        responseFindUserListener(holder.name),((NewFriendsMsgActivity) context).errorListener()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-		return convertView;
-	}
+        return convertView;
+    }
+
+    private Response.Listener<User> responseFindUserListener(final TextView name) {
+        return new Response.Listener<User>() {
+            @Override
+            public void onResponse(User user) {
+                if(user!=null){
+                    UserUtils.setUserBeanNick(user,name);
+                }
+            }
+        };
+    }
 
 	/**
 	 * 同意好友请求或者群申请
@@ -145,7 +168,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 	 * @param msg username
 	 */
 	private void acceptInvitation(final Button button, final InviteMessage msg) {
-		final ProgressDialog pd = new ProgressDialog(context);
+		pd = new ProgressDialog(context);
 		String str1 = context.getResources().getString(R.string.Are_agree_with);
 		final String str2 = context.getResources().getString(R.string.Has_agreed_to);
 		final String str3 = context.getResources().getString(R.string.Agree_with_failure);
@@ -157,33 +180,34 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 			public void run() {
 				// 调用sdk的同意方法
 				try {
-					if(msg.getGroupId() == null) //同意好友请求
-						EMChatManager.getInstance().acceptInvitation(msg.getFrom());
+					if(msg.getGroupId() == null) { //同意好友请求
+                        EMChatManager.getInstance().acceptInvitation(msg.getFrom());
+                        ((Activity) context).runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                pd.dismiss();
+                                button.setText(str2);
+                                msg.setStatus(InviteMessage.InviteMesageStatus.AGREED);
+                                // 更新db
+                                ContentValues values = new ContentValues();
+                                values.put(InviteMessgeDao.COLUMN_NAME_STATUS, msg.getStatus().ordinal());
+                                messgeDao.updateMessage(msg.getId(), values);
+                                button.setBackgroundDrawable(null);
+                                button.setEnabled(false);
+
+                            }
+                        });
+                    }
 					else { //同意加群申请
-                        EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
                         String path = new ApiParams()
                                 .with(I.Member.USER_NAME,msg.getFrom())
                                 .with(I.Member.GROUP_HX_ID,msg.getGroupId())
                                 .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER_BY_USERNAME);
-                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Group>(path,Group.class,
-                                responseAddMemberListener(),((NewFriendsMsgActivity) context).errorListener()));
+                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Group>(path, Group.class,
+                                responseAddGroupMemberListener(button,msg),((NewFriendsMsgActivity) context).errorListener()));
+                        EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
                     }
-					((Activity) context).runOnUiThread(new Runnable() {
-
-						@Override
-						public void run() {
-							pd.dismiss();
-							button.setText(str2);
-							msg.setStatus(InviteMessage.InviteMesageStatus.AGREED);
-							// 更新db
-							ContentValues values = new ContentValues();
-							values.put(InviteMessgeDao.COLUMN_NAME_STATUS, msg.getStatus().ordinal());
-							messgeDao.updateMessage(msg.getId(), values);
-							button.setBackgroundDrawable(null);
-							button.setEnabled(false);
-
-						}
-					});
 				} catch (final Exception e) {
 					((Activity) context).runOnUiThread(new Runnable() {
 
@@ -199,12 +223,34 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 		}).start();
 	}
 
-    private Response.Listener<Group> responseAddMemberListener() {
+    private Response.Listener<Group> responseAddGroupMemberListener(final Button button,final InviteMessage msg) {
         return new Response.Listener<Group>() {
             @Override
             public void onResponse(Group group) {
                 if(group!=null && group.isResult()){
-                    new DownloadAllGroupMembersTask(context,group.getMGroupId()+"").execute();
+                    new DownloadAllGroupMembersTask(context,group.getMGroupHxid()).execute();
+                    try {
+                        final String str2 = context.getResources().getString(R.string.Has_agreed_to);
+                        EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
+                        ((Activity) context).runOnUiThread(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                pd.dismiss();
+                                button.setText(str2);
+                                msg.setStatus(InviteMessage.InviteMesageStatus.AGREED);
+                                // 更新db
+                                ContentValues values = new ContentValues();
+                                values.put(InviteMessgeDao.COLUMN_NAME_STATUS, msg.getStatus().ordinal());
+                                messgeDao.updateMessage(msg.getId(), values);
+                                button.setBackgroundDrawable(null);
+                                button.setEnabled(false);
+
+                            }
+                        });
+                    } catch (final EaseMobException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
