@@ -239,7 +239,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			case REQUEST_CODE_EXIT_DELETE: // 解散群
 				progressDialog.setMessage(st3);
 				progressDialog.show();
-				deleteGrop();
+                deleteGroupFromServer();
 				break;
 			case REQUEST_CODE_CLEAR_ALL_HISTORY:
 				// 清空此群聊的聊天记录
@@ -452,6 +452,44 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                     progressDialog.dismiss();
                     Utils.showToast(GroupDetailsActivity.this,
                             Utils.getResourceString(GroupDetailsActivity.this,msg.getMsg()),Toast.LENGTH_SHORT);
+                }
+            }
+        };
+    }
+
+    private void deleteGroupFromServer(){
+        try {
+            String path = new ApiParams()
+                    .with(I.Group.GROUP_ID,mGroup.getMGroupId()+"")
+                    .getRequestUrl(I.REQUEST_DELETE_GROUP);
+            executeRequest(new GsonRequest<Message>(path,Message.class,
+                    responseDeleteGroupListener(),errorListener()));
+        } catch (Exception e) {
+            final String st5 = getResources().getString(R.string.Dissolve_group_chat_tofail);
+            e.printStackTrace();
+            progressDialog.dismiss();
+            Toast.makeText(getApplicationContext(), st5 + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private Response.Listener<Message> responseDeleteGroupListener() {
+        return new Response.Listener<Message>() {
+            @Override
+            public void onResponse(Message msg) {
+                if(msg.isResult()){
+                    deleteGrop();
+                    ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
+                    Log.e(TAG,"1 groupList.size="+groupList.size());
+                    for (int i=0;i<groupList.size();i++){
+                        if(groupList.get(i).getMGroupHxid().equals(groupId)){
+                            groupList.remove(i);
+                            sendStickyBroadcast(new Intent("update_group_list").putExtra("groupId",groupId));
+                        }
+                    }
+                    Log.e(TAG,"2 groupList.size="+groupList.size());
+                }else{
+                    progressDialog.dismiss();
+                    Toast.makeText(getApplicationContext(), Utils.getResourceString(getApplicationContext(),msg.getMsg()), Toast.LENGTH_LONG).show();
                 }
             }
         };
