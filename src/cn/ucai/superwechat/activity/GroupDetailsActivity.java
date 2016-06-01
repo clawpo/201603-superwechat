@@ -253,31 +253,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 				if(!TextUtils.isEmpty(returnData)){
 					progressDialog.setMessage(st5);
 					progressDialog.show();
-					
-					new Thread(new Runnable() {
-						public void run() {
-							try {
-							    EMGroupManager.getInstance().changeGroupName(groupId, returnData);
-								runOnUiThread(new Runnable() {
-									public void run() {
-                                        String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
-                                        ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
-										progressDialog.dismiss();
-										Toast.makeText(getApplicationContext(), st6, Toast.LENGTH_SHORT).show();
-									}
-								});
-								
-							} catch (EaseMobException e) {
-								e.printStackTrace();
-								runOnUiThread(new Runnable() {
-									public void run() {
-										progressDialog.dismiss();
-										Toast.makeText(getApplicationContext(), st7, Toast.LENGTH_SHORT).show();
-									}
-								});
-							}
-						}
-					}).start();
+                    updateGroupNameToServer(returnData);
 				}
 				break;
 			case REQUEST_CODE_ADD_TO_BALCKLIST:
@@ -313,7 +289,72 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 		}
 	}
 
-	private void refreshMembers(){
+    private void updateGroupNameToServer(final String newGroupName) {
+        try {
+            String path = new ApiParams()
+                    .with(I.Group.GROUP_ID,mGroup.getMGroupId()+"")
+                    .with(I.Group.NAME,newGroupName)
+                    .getRequestUrl(I.REQUEST_UPDATE_GROUP_NAME);
+            executeRequest(new GsonRequest<Group>(path,Group.class,
+                    responseUpdateGroupNameListener(newGroupName),errorListener()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Response.Listener<Group> responseUpdateGroupNameListener(final String newGroupName) {
+        return new Response.Listener<Group>() {
+            @Override
+            public void onResponse(Group group) {
+                if(group!=null && group.isResult()){
+                    updateGroupName(newGroupName);
+                    mGroup = group;
+                    ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
+                    for (int i=0;i<groupList.size();i++){
+                        if(groupList.get(i).getMGroupId()==group.getMGroupId()){
+                            groupList.get(i).setMGroupName(group.getMGroupName());
+                            Log.e(TAG,"update group name is "+ groupList.get(i).getMGroupName());
+                        }
+                    }
+                    sendStickyBroadcast(new Intent("update_group_list"));
+                }else{
+                    progressDialog.dismiss();
+                    Utils.showToast(GroupDetailsActivity.this,Utils.getResourceString(GroupDetailsActivity.this,group.getMsg()),Toast.LENGTH_SHORT);
+                }
+            }
+        };
+    }
+
+    private void updateGroupName(final String newGroupName){
+        final String st6 = getResources().getString(R.string.Modify_the_group_name_successful);
+        final String st7 = getResources().getString(R.string.change_the_group_name_failed_please);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    EMGroupManager.getInstance().changeGroupName(groupId, newGroupName);
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
+                            ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), st6, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                } catch (EaseMobException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            progressDialog.dismiss();
+                            Toast.makeText(getApplicationContext(), st7, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        }).start();
+    }
+
+    private void refreshMembers(){
         String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
         ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
         ArrayList<Member> list = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);

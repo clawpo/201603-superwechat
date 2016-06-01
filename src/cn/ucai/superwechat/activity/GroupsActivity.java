@@ -236,6 +236,7 @@ public class GroupsActivity extends BaseActivity {
                 ArrayList<Group> list = SuperWeChatApplication.getInstance().getGroupList();
                 if(!grouplist.containsAll(list)){
                     groupAdapter.initList(list);
+					groupAdapter.notifyDataSetChanged();
                 }
             }
         }
