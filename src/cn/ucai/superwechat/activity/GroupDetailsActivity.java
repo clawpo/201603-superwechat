@@ -58,6 +58,7 @@ import cn.ucai.superwechat.bean.Member;
 import cn.ucai.superwechat.bean.Message;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
+import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.utils.Utils;
 import cn.ucai.superwechat.widget.ExpandGridView;
@@ -618,6 +619,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			    holder.textView.setText("");
 				// 设置成删除按钮
 			    holder.imageView.setDefaultImageResId(R.drawable.smiley_minus_btn);
+                holder.imageView.setImageUrl("", RequestManager.getImageLoader());
+                holder.imageView.setErrorImageResId(R.drawable.smiley_minus_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_minus_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限，不提供加减人按钮
 				if (!group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -645,6 +648,8 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			} else if (position == getCount() - 2) { // 添加群组成员按钮
 			    holder.textView.setText("");
 			    holder.imageView.setDefaultImageResId(R.drawable.smiley_add_btn);
+                holder.imageView.setImageUrl("", RequestManager.getImageLoader());
+                holder.imageView.setErrorImageResId(R.drawable.smiley_add_btn);
 //				button.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.smiley_add_btn, 0, 0);
 				// 如果不是创建者或者没有相应权限
 				if (!group.isAllowInvites() && !group.getOwner().equals(EMChatManager.getInstance().getCurrentUser())) {
@@ -706,7 +711,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 								return;
 							}
 							EMLog.d("group", "remove user from group:" + member.getMUserName());
-							deleteMembersFromGroup(member.getMUserName());
+                            deteleMembersFromServer(member);
 						} else {
 							// 正常情况下点击user，可以进入用户详情或者聊天页面等等
 							// startActivity(new
@@ -717,35 +722,70 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 						}
 					}
 
-					/**
+                    protected void deteleMembersFromServer(final Member user){
+                        if (progressDialog == null) {
+                            progressDialog = new ProgressDialog(GroupDetailsActivity.this);
+                            progressDialog.setCanceledOnTouchOutside(false);
+                        }
+                        progressDialog.setMessage(st13);
+                        progressDialog.show();
+                        try {
+                            String path = new ApiParams()
+                                    .with(I.Member.GROUP_ID,mGroup.getMGroupId()+"")
+                                    .with(I.Member.USER_NAME,user.getMUserName())
+                                    .getRequestUrl(I.REQUEST_DELETE_GROUP_MEMBER);
+                            executeRequest(new GsonRequest<Message>(path,Message.class,
+                                    responseDeleteMemberListener(user),errorListener()));
+                        } catch (Exception e) {
+                            progressDialog.dismiss();
+                            e.printStackTrace();
+                            Toast.makeText(getApplicationContext(), st14 + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    private Response.Listener<Message> responseDeleteMemberListener(final Member user) {
+                        return new Response.Listener<Message>() {
+                            @Override
+                            public void onResponse(Message msg) {
+                                if(msg.isResult()){
+                                    deleteMembersFromGroup(user);
+                                }else{
+                                    Toast.makeText(getApplicationContext(), st14, Toast.LENGTH_LONG).show();
+                                    progressDialog.dismiss();
+                                }
+                            }
+                        };
+                    }
+
+                    /**
 					 * 删除群成员
 					 * 
-					 * @param username
+					 * @param user
 					 */
-					protected void deleteMembersFromGroup(final String username) {
-						final ProgressDialog deleteDialog = new ProgressDialog(GroupDetailsActivity.this);
-						deleteDialog.setMessage(st13);
-						deleteDialog.setCanceledOnTouchOutside(false);
-						deleteDialog.show();
+					protected void deleteMembersFromGroup(final Member user) {
 						new Thread(new Runnable() {
 
 							@Override
 							public void run() {
 								try {
 									// 删除被选中的成员
-								    EMGroupManager.getInstance().removeUserFromGroup(groupId, username);
+								    EMGroupManager.getInstance().removeUserFromGroup(groupId, user.getMUserName());
 									isInDeleteMode = false;
 									runOnUiThread(new Runnable() {
 
 										@Override
 										public void run() {
-											deleteDialog.dismiss();
+                                            progressDialog.dismiss();
                                             Log.e(TAG,"deleteMembersFromGroup");
-											refreshMembers();
+                                            ArrayList<Member> list = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
+                                            if(list!=null){
+                                                list.remove(user);
+                                            }
+                                            refreshMembers();
 										}
 									});
 								} catch (final Exception e) {
-									deleteDialog.dismiss();
+                                    progressDialog.dismiss();
 									runOnUiThread(new Runnable() {
 										public void run() {
 											Toast.makeText(getApplicationContext(), st14 + e.getMessage(), Toast.LENGTH_LONG).show();
