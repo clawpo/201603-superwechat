@@ -30,7 +30,8 @@ import com.easemob.exceptions.EaseMobException;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.utils.UserUtils;
@@ -41,7 +42,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 	private NetworkImageView niv_avatar;
 	private TextView tv_name;
 	private TextView tv_introduction;
-	private Group group;
+	private GroupAvatar group;
 	private String groupid;
 	private ProgressBar progressBar;
 
@@ -56,7 +57,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
 		tv_introduction = (TextView) findViewById(R.id.tv_introduction);
 		progressBar = (ProgressBar) findViewById(R.id.loading);
 
-        Group groupInfo = (Group) getIntent().getSerializableExtra("groupinfo");
+		GroupAvatar groupInfo = (GroupAvatar) getIntent().getSerializableExtra("groupinfo");
 		String groupname = null;
 		if(groupInfo != null){
 		    groupname = groupInfo.getMGroupName();
@@ -80,21 +81,27 @@ public class GroupSimpleDetailActivity extends BaseActivity {
             String path = new ApiParams()
                     .with(I.Group.HX_ID,groupid)
                     .getRequestUrl(I.REQUEST_FIND_PUBLIC_GROUP_BY_HXID);
-            executeRequest(new GsonRequest<Group>(path,Group.class,
+            executeRequest(new GsonRequest<Result>(path,Result.class,
                     responseFindGroupListener(),errorListener()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private Response.Listener<Group> responseFindGroupListener() {
-        return new Response.Listener<Group>() {
+    private Response.Listener<Result> responseFindGroupListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Group g) {
-                if(g!=null){
-                    group = g;
-                    showGroupDetail();
-                }else{
+            public void onResponse(Result result) {
+				if(result.isRetMsg()) {
+                    GroupAvatar g = (GroupAvatar) result.getRetData();
+                    if (g != null) {
+                        group = g;
+                        showGroupDetail();
+                    } else {
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.group_not_existed), Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                } else {
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.group_not_existed), Toast.LENGTH_SHORT).show();
                     finish();
                 }

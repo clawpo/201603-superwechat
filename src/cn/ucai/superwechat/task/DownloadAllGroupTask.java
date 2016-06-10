@@ -7,14 +7,15 @@ import android.util.Log;
 import com.android.volley.Response;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.activity.BaseActivity;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
-import cn.ucai.superwechat.utils.Utils;
 
 public class DownloadAllGroupTask extends BaseActivity {
     private static final String TAG = DownloadAllGroupTask.class.getName();
@@ -32,41 +33,32 @@ public class DownloadAllGroupTask extends BaseActivity {
         try {
             path = new ApiParams()
                     .with(I.User.USER_NAME,username)
-                    .getRequestUrl(I.REQUEST_DOWNLOAD_GROUPS);
+                    .getRequestUrl(I.REQUEST_FIND_GROUP_BY_USER_NAME);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public void execute(){
-        executeRequest(new GsonRequest<Group[]>(path,Group[].class,
+        executeRequest(new GsonRequest<Result>(path,Result.class,
                 responseDownloadAllGroupTaskListener(),errorListener()));
     }
 
-    private Response.Listener<Group[]> responseDownloadAllGroupTaskListener() {
-        return new Response.Listener<Group[]>() {
+    private Response.Listener<Result> responseDownloadAllGroupTaskListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Group[] groups) {
+            public void onResponse(Result result) {
                 Log.e(TAG,"DownloadAllGroup");
-                if(groups!=null){
-                    Log.e(TAG,"DownloadAllGroup,groups size="+groups.length);
-                    ArrayList<Group> list = Utils.array2List(groups);
-                    ArrayList<Group> groupList =
-                            SuperWeChatApplication.getInstance().getGroupList();
-                    groupList.clear();
-                    groupList.addAll(list);
-//                    for (Group group:groupList){
-//                        String groupName = group.getMGroupName();
-//                        String header = "";
-//
-//                        for(int i=0;i<groupName.length();i++){
-//                            String s = groupName.substring(i,i+1);
-//                            header = header + HanziToPinyin.getInstance()
-//                                    .get(s).get(0).target.toLowerCase();
-//                        }
-//                        group.setHeader(header);
-//                    }
-                    mContext.sendStickyBroadcast(new Intent("update_group_list"));
+                if(result.isRetMsg()) {
+                    List<GroupAvatar> list = (List<GroupAvatar>) result.getRetData();
+                    if (list != null) {
+                        Log.e(TAG, "DownloadAllGroup,groups size=" + list.size());
+                        ArrayList<GroupAvatar> groupList =
+                                SuperWeChatApplication.getInstance().getGroupList();
+                        groupList.clear();
+                        groupList.addAll(list);
+                        mContext.sendStickyBroadcast(new Intent("update_group_list"));
+                    }
                 }
             }
         };

@@ -102,8 +102,8 @@ import cn.ucai.superwechat.adapter.MessageAdapter;
 import cn.ucai.superwechat.adapter.VoicePlayClickListener;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.applib.model.GroupRemoveListener;
-import cn.ucai.superwechat.bean.Group;
-import cn.ucai.superwechat.bean.Member;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.MemberUserAvatar;
 import cn.ucai.superwechat.domain.RobotUser;
 import cn.ucai.superwechat.task.DownloadAllGroupMembersTask;
 import cn.ucai.superwechat.utils.CommonUtils;
@@ -211,7 +211,7 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	public EMGroup group;
 	public EMChatRoom room;
 	public boolean isRobot;
-    Group mGroup;
+    GroupAvatar mGroup;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -519,15 +519,15 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	}
 	
 	protected void onGroupViewCreation(){
-        ArrayList<Member> members = SuperWeChatApplication.getInstance().getGroupMembers().get(toChatUsername);
+        ArrayList<MemberUserAvatar> members = SuperWeChatApplication.getInstance().getGroupMembers().get(toChatUsername);
         if(members==null){
             new DownloadAllGroupMembersTask(ChatActivity.this,toChatUsername).execute();
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
-                for (Group g:groupList){
+                ArrayList<GroupAvatar> groupList = SuperWeChatApplication.getInstance().getGroupList();
+                for (GroupAvatar g:groupList){
                     if (g.getMGroupHxid().equals(toChatUsername)){
                         mGroup = g;
                         Log.e(TAG,"mgroup="+mGroup);

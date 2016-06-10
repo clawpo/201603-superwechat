@@ -17,10 +17,9 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Contact;
-import cn.ucai.superwechat.bean.Group;
-import cn.ucai.superwechat.bean.Member;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.MemberUserAvatar;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.domain.EMUser;
 
@@ -45,8 +44,8 @@ public class UserUtils {
         return user;
     }
 
-    public static Contact getUserBeanInfo(String username) {
-        Contact contact = SuperWeChatApplication.getInstance().getUserList().get(username);
+    public static UserAvatar getUserBeanInfo(String username) {
+        UserAvatar contact = SuperWeChatApplication.getInstance().getUserList().get(username);
         return contact;
     }
 
@@ -64,12 +63,12 @@ public class UserUtils {
     }
 
     public static void setUserBeanAvatar(String username, NetworkImageView imageView) {
-        Contact contact = getUserBeanInfo(username);
-        if(contact != null && contact.getMContactCname() != null){
+        UserAvatar contact = getUserBeanInfo(username);
+        if(contact != null && contact.getMUserName() != null){
             setUserAvatar(getAvatarPath(username),imageView);
         }
     }
-    public static void setUserBeanAvatar(User user, NetworkImageView imageView) {
+    public static void setUserBeanAvatar(UserAvatar user, NetworkImageView imageView) {
         if(user!=null && user.getMUserName()!=null) {
             setUserAvatar(getAvatarPath(user.getMUserName()), imageView);
         }
@@ -110,7 +109,7 @@ public class UserUtils {
 	}
 
     public static void setCurrentUserAvatar(NetworkImageView imageView) {
-        User user = SuperWeChatApplication.getInstance().getUser();
+        UserAvatar user = SuperWeChatApplication.getInstance().getUser();
         if(user!=null){
             setUserAvatar(getAvatarPath(user.getMUserName()),imageView);
         }
@@ -130,12 +129,12 @@ public class UserUtils {
 
     public static void setGroupMemberNick(String hxid, String username,TextView textView){
         if(hxid!=null && username!=null){
-            Member groupMember = getGroupMember(hxid, username);
+            MemberUserAvatar groupMember = getGroupMember(hxid, username);
             if(groupMember!=null){
                 if(groupMember.getMUserNick()!=null){
                     textView.setText(groupMember.getMUserNick());
-                }else if(groupMember.getMMemberUserName()!=null){
-                    textView.setText(groupMember.getMMemberUserName());
+                }else if(groupMember.getMUserName()!=null){
+                    textView.setText(groupMember.getMUserName());
                 }else{
                     textView.setText(username);
                 }
@@ -143,11 +142,11 @@ public class UserUtils {
         }
     }
 
-    private static Member getGroupMember(String hxid, String username) {
-        ArrayList<Member> members = SuperWeChatApplication.getInstance().getGroupMembers().get(hxid);
+    private static MemberUserAvatar getGroupMember(String hxid, String username) {
+        ArrayList<MemberUserAvatar> members = SuperWeChatApplication.getInstance().getGroupMembers().get(hxid);
         if(members!=null){
-            for (Member member:members){
-                if(member.getMMemberUserName().equals(username)){
+            for (MemberUserAvatar member:members){
+                if(member.getMUserName().equals(username)){
                     return member;
                 }
             }
@@ -156,18 +155,18 @@ public class UserUtils {
     }
 
     public static void setUserBeanNick(String username,TextView textView) {
-        Contact contact = getUserBeanInfo(username);
+        UserAvatar contact = getUserBeanInfo(username);
         if(contact!=null){
             if(contact.getMUserNick()!=null){
                 textView.setText(contact.getMUserNick());
-            } else if(contact.getMContactCname()!=null){
-                textView.setText(contact.getMContactCname());
+            } else if(contact.getMUserName()!=null){
+                textView.setText(contact.getMUserName());
             }
         } else {
             textView.setText(username);
         }
     }
-    public static void setUserBeanNick(User user,TextView textView) {
+    public static void setUserBeanNick(UserAvatar user,TextView textView) {
         if(user!=null){
             if(user.getMUserNick()!=null){
                 textView.setText(user.getMUserNick());
@@ -188,7 +187,7 @@ public class UserUtils {
     }
 
     public static void setCurrentUserBeanNick(TextView textView){
-        User user = SuperWeChatApplication.getInstance().getUser();
+        UserAvatar user = SuperWeChatApplication.getInstance().getUser();
         if(textView != null && user != null){
             textView.setText(user.getMUserNick());
         }
@@ -212,14 +211,14 @@ public class UserUtils {
      * @param username
      * @param user
      */
-    public static void setUserHearder(String username, Contact user) {
+    public static void setUserHearder(String username, UserAvatar user) {
         String headerName = null;
         if (!TextUtils.isEmpty(user.getMUserNick())) {
             headerName = user.getMUserNick();
         } else if(!TextUtils.isEmpty(user.getMUserName())) {
             headerName = user.getMUserName();
         } else {
-            headerName = user.getMContactCname();
+            headerName = user.getMUserName();
         }
         if (username.equals(Constant.NEW_FRIENDS_USERNAME)
                 || username.equals(Constant.GROUP_USERNAME)) {
@@ -236,10 +235,10 @@ public class UserUtils {
         }
     }
 
-    public static Group getGroupBeanFromHXID(String hxid) {
+    public static GroupAvatar getGroupBeanFromHXID(String hxid) {
         if(hxid!=null && !hxid.isEmpty()) {
-            ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
-            for (Group group:groupList){
+            ArrayList<GroupAvatar> groupList = SuperWeChatApplication.getInstance().getGroupList();
+            for (GroupAvatar group:groupList){
                 if(group.getMGroupHxid().equals(hxid)){
                     return group;
                 }

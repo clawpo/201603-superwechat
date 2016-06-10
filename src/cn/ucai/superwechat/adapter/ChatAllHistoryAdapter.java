@@ -45,7 +45,7 @@ import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.domain.RobotUser;
 import cn.ucai.superwechat.utils.DateUtils;
 import cn.ucai.superwechat.utils.SmileUtils;
@@ -103,7 +103,7 @@ public class ChatAllHistoryAdapter extends ArrayAdapter<EMConversation> {
 			// 群聊消息，显示群聊头像
             UserUtils.setGroupBeanAvatar(username,holder.avatar);
 //			holder.avatar.setImageResource(R.drawable.group_icon);
-            Group group = UserUtils.getGroupBeanFromHXID(username);
+            GroupAvatar group = UserUtils.getGroupBeanFromHXID(username);
 //			EMGroup group = EMGroupManager.getInstance().getGroup(username);
 			holder.name.setText(group != null ? group.getMGroupName() : username);
 		} else if(conversation.getType() == EMConversationType.ChatRoom){

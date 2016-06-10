@@ -38,8 +38,9 @@ import java.util.List;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.activity.NewFriendsMsgActivity;
-import cn.ucai.superwechat.bean.Group;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.Result;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.db.InviteMessgeDao;
@@ -140,7 +141,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
                 String path = new ApiParams()
                         .with(I.User.USER_NAME,msg.getFrom())
                         .getRequestUrl(I.REQUEST_FIND_USER);
-                ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<User>(path, User.class,
+                ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Result>(path, Result.class,
                         responseFindUserListener(holder.name),((NewFriendsMsgActivity) context).errorListener()));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -150,11 +151,12 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
         return convertView;
     }
 
-    private Response.Listener<User> responseFindUserListener(final TextView name) {
-        return new Response.Listener<User>() {
+    private Response.Listener<Result> responseFindUserListener(final TextView name) {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(User user) {
-                if(user!=null){
+            public void onResponse(Result result) {
+                if(result.isRetMsg()){
+					UserAvatar user = (UserAvatar) result.getRetData();
                     UserUtils.setUserBeanNick(user,name);
                 }
             }
@@ -203,8 +205,8 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
                         String path = new ApiParams()
                                 .with(I.Member.USER_NAME,msg.getFrom())
                                 .with(I.Member.GROUP_HX_ID,msg.getGroupId())
-                                .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER_BY_USERNAME);
-                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Group>(path, Group.class,
+                                .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER);
+                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Result>(path, Result.class,
                                 responseAddGroupMemberListener(button,msg),((NewFriendsMsgActivity) context).errorListener()));
                         EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
                     }
@@ -223,11 +225,12 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 		}).start();
 	}
 
-    private Response.Listener<Group> responseAddGroupMemberListener(final Button button,final InviteMessage msg) {
-        return new Response.Listener<Group>() {
+    private Response.Listener<Result> responseAddGroupMemberListener(final Button button,final InviteMessage msg) {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Group group) {
-                if(group!=null && group.isResult()){
+            public void onResponse(Result result) {
+                if(result!=null && result.isRetMsg()){
+                    GroupAvatar group = (GroupAvatar) result.getRetData();
                     new DownloadAllGroupMembersTask(context,group.getMGroupHxid()).execute();
                     try {
                         final String str2 = context.getResources().getString(R.string.Has_agreed_to);

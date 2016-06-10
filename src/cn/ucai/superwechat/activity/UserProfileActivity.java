@@ -33,8 +33,8 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Message;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.Result;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.MultipartRequest;
@@ -197,21 +197,24 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
                 .with(I.User.USER_NAME,SuperWeChatApplication.getInstance().getUserName())
                 .with(I.User.NICK,nickName)
                 .getRequestUrl(I.REQUEST_UPDATE_USER_NICK);
-            executeRequest(new GsonRequest<User>(path,User.class,
+            executeRequest(new GsonRequest<Result>(path,Result.class,
                     responseUpdateUserNickListener(),errorListener()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private Response.Listener<User> responseUpdateUserNickListener() {
-        return new Response.Listener<User>() {
+    private Response.Listener<Result> responseUpdateUserNickListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(User user) {
-                if(user.isResult()){
-                    updateRemoteNick(user.getMUserNick());
+            public void onResponse(Result result) {
+				if(result.isRetMsg()) {
+                    UserAvatar user = (UserAvatar) result.getRetData();
+                    if (user!=null) {
+                        updateRemoteNick(user.getMUserNick());
+                    }
                 }else{
-                    Utils.showToast(mContext,Utils.getResourceString(mContext,user.getMsg()),Toast.LENGTH_SHORT);
+                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_SHORT);
                     dialog.dismiss();
                 }
             }
@@ -278,23 +281,23 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
         String url = null;
         try {
             url = new ApiParams()
-                    .with(I.User.USER_NAME, SuperWeChatApplication.getInstance().getUserName())
+                    .with(I.NAME_OR_HXID, SuperWeChatApplication.getInstance().getUserName())
                     .with(I.AVATAR_TYPE,I.AVATAR_TYPE_USER_PATH)
                     .getRequestUrl(I.REQUEST_UPLOAD_AVATAR);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        executeRequest(new MultipartRequest<Message>(url,Message.class,null,
+        executeRequest(new MultipartRequest<Result>(url,Result.class,null,
                 uploadAvatarByMultipartListener(),errorListener(),mimeType, multipartBody));
     }
 
-    private Response.Listener<Message> uploadAvatarByMultipartListener() {
-        return new Response.Listener<Message>() {
+    private Response.Listener<Result> uploadAvatarByMultipartListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Message result) {
-                if(result.isResult()){
+            public void onResponse(Result result) {
+                if(result.isRetMsg()){
                     UserUtils.setCurrentUserAvatar(headAvatar);
-                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getMsg()),Toast.LENGTH_SHORT);
+                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_SHORT);
                     dialog.dismiss();
                 }else{
                     Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_fail),

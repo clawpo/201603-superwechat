@@ -12,10 +12,10 @@ import java.util.HashMap;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.activity.BaseActivity;
-import cn.ucai.superwechat.bean.Contact;
+import cn.ucai.superwechat.bean.Result;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
-import cn.ucai.superwechat.utils.Utils;
 
 public class DownloadContactListTask extends BaseActivity {
     private static final String TAG = DownloadContactListTask.class.getName();
@@ -40,29 +40,31 @@ public class DownloadContactListTask extends BaseActivity {
     }
 
     public void execute(){
-        executeRequest(new GsonRequest<Contact[]>(path,Contact[].class,
+        executeRequest(new GsonRequest<Result>(path,Result.class,
                 responseDownloadContactListListener(),errorListener()));
     }
 
-    private Response.Listener<Contact[]> responseDownloadContactListListener() {
-        return new Response.Listener<Contact[]>() {
+    private Response.Listener<Result> responseDownloadContactListListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Contact[] contacts) {
+            public void onResponse(Result result) {
                 Log.e(TAG,"DownloadContactList");
-                if(contacts!=null){
-                    Log.e(TAG,"DownloadContactList,contacts size="+contacts.length);
-                    ArrayList<Contact> list = Utils.array2List(contacts);
-                    ArrayList<Contact> contactList =
-                            SuperWeChatApplication.getInstance().getContactList();
-                    contactList.clear();
-                    contactList.addAll(list);
-                    HashMap<String, Contact> userList =
-                            SuperWeChatApplication.getInstance().getUserList();
-                    userList.clear();
-                    for(Contact c:list){
-                        userList.put(c.getMContactCname(),c);
+                if(result.isRetMsg()){
+                    ArrayList<UserAvatar> list = (ArrayList<UserAvatar>) result.getRetData();
+                    if(list!=null) {
+                        Log.e(TAG, "DownloadContactList,contacts size=" + list.size());
+                        ArrayList<UserAvatar> contactList =
+                                SuperWeChatApplication.getInstance().getContactList();
+                        contactList.clear();
+                        contactList.addAll(list);
+                        HashMap<String, UserAvatar> userList =
+                                SuperWeChatApplication.getInstance().getUserList();
+                        userList.clear();
+                        for (UserAvatar c : list) {
+                            userList.put(c.getMUserName(), c);
+                        }
+                        mContext.sendStickyBroadcast(new Intent("update_contact_list"));
                     }
-                    mContext.sendStickyBroadcast(new Intent("update_contact_list"));
                 }
             }
         };

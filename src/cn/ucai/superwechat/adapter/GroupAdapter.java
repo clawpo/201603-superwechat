@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cn.ucai.superwechat.R;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.utils.UserUtils;
 
 public class GroupAdapter extends BaseAdapter implements SectionIndexer {
@@ -44,8 +44,8 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
 	private LayoutInflater inflater;
 	private String newGroup;
 	private String addPublicGroup;
-    ArrayList<Group> mGroupList;
-	ArrayList<Group> mCopyGroupList;
+    ArrayList<GroupAvatar> mGroupList;
+	ArrayList<GroupAvatar> mCopyGroupList;
     private SparseIntArray positionOfSection;
     private SparseIntArray sectionOfPosition;
     List<String> list;
@@ -53,13 +53,13 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
     private boolean notiyfyByFilter;
     Context mContext;
 
-	public GroupAdapter(Context context, int res, ArrayList<Group> groups) {
+	public GroupAdapter(Context context, int res, ArrayList<GroupAvatar> groups) {
         this.mContext = context;
 		this.inflater = LayoutInflater.from(context);
 		newGroup = context.getResources().getString(R.string.The_new_group_chat);
 		addPublicGroup = context.getResources().getString(R.string.add_public_group_chat);
         mGroupList = groups;
-		mCopyGroupList = new ArrayList<Group>();
+		mCopyGroupList = new ArrayList<GroupAvatar>();
         mCopyGroupList.addAll(groups);
 	}
 
@@ -129,7 +129,7 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
 			if (convertView == null) {
 				convertView = inflater.inflate(R.layout.row_group, null);
 			}
-			Group group = getItem(position);
+            GroupAvatar group = getItem(position);
 			((TextView) convertView.findViewById(R.id.name)).setText(group.getMGroupName());
 			UserUtils.setGroupBeanAvatar(group.getMGroupHxid(),((NetworkImageView) convertView.findViewById(R.id.avatar)));
 		}
@@ -143,7 +143,7 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
 	}
 
     @Override
-    public Group getItem(int position) {
+    public GroupAvatar getItem(int position) {
         if(position>=3){
             return mGroupList.get(position-3);
         }
@@ -155,7 +155,7 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
 		return 0;
 	}
 
-	public void initList(ArrayList<Group> list) {
+	public void initList(ArrayList<GroupAvatar> list) {
 		mGroupList.addAll(list);
 		notifyDataSetChanged();
 	}
@@ -192,9 +192,9 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
     }
 
     private class  MyFilter extends Filter{
-        List<Group> mOriginalList = null;
+        List<GroupAvatar> mOriginalList = null;
 
-        public MyFilter(List<Group> myList) {
+        public MyFilter(List<GroupAvatar> myList) {
             this.mOriginalList = myList;
         }
 
@@ -202,7 +202,7 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
         protected synchronized FilterResults performFiltering(CharSequence prefix) {
             FilterResults results = new FilterResults();
             if(mOriginalList==null){
-                mOriginalList = new ArrayList<Group>();
+                mOriginalList = new ArrayList<GroupAvatar>();
             }
             Log.e(TAG, "contacts original size: " + mOriginalList.size());
             Log.e(TAG, "contacts copy size: " + mCopyGroupList.size());
@@ -213,9 +213,9 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
             }else{
                 String prefixString = prefix.toString();
                 final int count = mOriginalList.size();
-                final ArrayList<Group> newValues = new ArrayList<Group>();
+                final ArrayList<GroupAvatar> newValues = new ArrayList<GroupAvatar>();
                 for(int i=0;i<count;i++){
-                    final Group group = mOriginalList.get(i);
+                    final GroupAvatar group = mOriginalList.get(i);
                     String username = UserUtils.getPinYinFromHanZi(group.getMGroupName());
                     if(username.contains(prefixString)){
                         newValues.add(group);
@@ -244,7 +244,7 @@ public class GroupAdapter extends BaseAdapter implements SectionIndexer {
         protected synchronized void publishResults(CharSequence constraint,
                                                    FilterResults results) {
             mGroupList.clear();
-            mGroupList.addAll((List<Group>)results.values);
+            mGroupList.addAll((List<GroupAvatar>)results.values);
             Log.e(TAG, "publish contacts filter results size: " + results.count);
             if (results.count > 0) {
                 notiyfyByFilter = true;

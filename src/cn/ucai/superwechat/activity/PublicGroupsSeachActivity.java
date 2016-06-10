@@ -15,7 +15,8 @@ import com.android.volley.toolbox.NetworkImageView;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.utils.UserUtils;
@@ -25,7 +26,7 @@ public class PublicGroupsSeachActivity extends BaseActivity{
     private EditText idET;
     private TextView nameText;
     private NetworkImageView nivAvatar;
-    public static Group searchedGroup;
+    public static GroupAvatar searchedGroup;
     ProgressDialog pd;
 
     @Override
@@ -58,24 +59,32 @@ public class PublicGroupsSeachActivity extends BaseActivity{
             String path = new ApiParams()
                     .with(I.Group.HX_ID,idET.getText().toString())
                     .getRequestUrl(I.REQUEST_FIND_PUBLIC_GROUP_BY_HXID);
-            executeRequest(new GsonRequest<Group>(path,Group.class,
+            executeRequest(new GsonRequest<Result>(path,Result.class,
                     responseFindGroupListener(),errorListener()));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private Response.Listener<Group> responseFindGroupListener() {
-        return new Response.Listener<Group>() {
+    private Response.Listener<Result> responseFindGroupListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(Group group) {
-                if(group!=null){
-                    searchedGroup = group;
-                    pd.dismiss();
-                    containerLayout.setVisibility(View.VISIBLE);
-                    nameText.setText(group.getMGroupName());
-                    UserUtils.setGroupBeanAvatar(group.getMGroupHxid(),nivAvatar);
-                }else{
+            public void onResponse(Result result) {
+                if(result.isRetMsg()) {
+                    GroupAvatar group = (GroupAvatar) result.getRetData();
+                    if (group != null) {
+                        searchedGroup = group;
+                        pd.dismiss();
+                        containerLayout.setVisibility(View.VISIBLE);
+                        nameText.setText(group.getMGroupName());
+                        UserUtils.setGroupBeanAvatar(group.getMGroupHxid(), nivAvatar);
+                    } else {
+                        pd.dismiss();
+                        searchedGroup = null;
+                        containerLayout.setVisibility(View.GONE);
+                        Toast.makeText(getApplicationContext(), getResources().getString(R.string.group_not_existed), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
                     pd.dismiss();
                     searchedGroup = null;
                     containerLayout.setVisibility(View.GONE);

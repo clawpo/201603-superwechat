@@ -48,8 +48,8 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Message;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.Result;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.OkHttpUtils;
@@ -215,7 +215,7 @@ public class LoginActivity extends BaseActivity {
 
     private void loginAppServer() {
         UserDao dao = new UserDao(mContext);
-        User user = dao.findUserByUserName(currentUsername);
+        UserAvatar user = dao.findUserByUserName(currentUsername);
         if(user!=null) {
             if(user.getMUserPassword().equals(MD5.getData(currentPassword))){
                 saveUser(user);
@@ -233,7 +233,7 @@ public class LoginActivity extends BaseActivity {
                         .with(I.User.PASSWORD,currentPassword)
                         .getRequestUrl(I.REQUEST_LOGIN);
                 Log.e(TAG,"path = "+ path);
-                executeRequest(new GsonRequest<User>(path, User.class,
+                executeRequest(new GsonRequest<Result>(path, Result.class,
                         responseListener(), errorListener()));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -242,26 +242,27 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private Response.Listener<User> responseListener() {
-        return new Response.Listener<User>() {
+    private Response.Listener<Result> responseListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(User userBean) {
-				if(userBean.isResult()){
+            public void onResponse(Result result) {
+				if(result.isRetMsg()){
+                    UserAvatar userBean = (UserAvatar) result.getRetData();
 					saveUser(userBean);
-					userBean.setMUserPassword(MD5.getData(userBean.getMUserPassword()));
+                    userBean.setMUserPassword(MD5.getData(currentPassword));
 					UserDao dao = new UserDao(mContext);
 					dao.addUser(userBean);
 					loginSuccess();
 				}else{
 					pd.dismiss();
-					Utils.showToast(mContext,Utils.getResourceString(mContext,userBean.getMsg()),Toast.LENGTH_LONG);
+					Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_LONG);
 				}
             }
         };
     }
 
     /**保存当前登录的用户到全局变量*/
-    private void saveUser(User user) {
+    private void saveUser(UserAvatar user) {
         SuperWeChatApplication instance = SuperWeChatApplication.getInstance();
         instance.setUser(user);
         // 登陆成功，保存用户名密码
@@ -277,10 +278,11 @@ public class LoginActivity extends BaseActivity {
             EMGroupManager.getInstance().loadAllGroups();
             EMChatManager.getInstance().loadAllConversations();
             //下载用户头像
-            final OkHttpUtils<Message> utils = new OkHttpUtils<Message>();
+            final OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
             utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
                     .addParam(I.KEY_REQUEST, I.REQUEST_DOWNLOAD_AVATAR)//添加上传的请求参数
-                    .addParam(I.AVATAR_TYPE, currentUsername)//添加用户的账号
+                    .addParam(I.NAME_OR_HXID, currentUsername)//添加用户的账号
+                    .addParam(I.AVATAR_TYPE, I.AVATAR_TYPE_USER_PATH)//添加用户的头像类型
             .doInBackground(new Callback() {
                 @Override
                 public void onFailure(Request request, IOException e) {

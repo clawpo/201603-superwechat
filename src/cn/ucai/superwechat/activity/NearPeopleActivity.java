@@ -25,7 +25,7 @@ import java.util.ArrayList;
 
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.LocationUserAvatar;
 import cn.ucai.superwechat.utils.ImageLoader;
 import cn.ucai.superwechat.utils.UserUtils;
 import cn.ucai.superwechat.utils.Utils;
@@ -93,7 +93,7 @@ public class NearPeopleActivity extends BaseActivity {
             }
             mCurrentLocation = location;
             //将当前用户的位置信息上传至服务器，然后从服务器再下载所有联系人的位置信息
-            User user = SuperWeChatApplication.getInstance().getUser();
+            LocationUserAvatar user = (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
             user.setMLocationLatitude(location.getLatitude());
             user.setMLocationLongitude(location.getLongitude());
             Log.i("main", "latitude:"+location.getLatitude()+",longitude:"+location.getLongitude());
@@ -131,22 +131,22 @@ public class NearPeopleActivity extends BaseActivity {
         Context context;
         ArrayList<NearUserBean> nearUsers;
         ImageLoader imageLoader;
-        User myUser;
+        LocationUserAvatar myUser;
         
-        public NearPeopleAdapter(Context context, ArrayList<User> users) {
+        public NearPeopleAdapter(Context context, ArrayList<LocationUserAvatar> users) {
             super();
             this.context = context;
             imageLoader=ImageLoader.getInstance(context);
-            myUser=SuperWeChatApplication.getInstance().getUser();
+            myUser= (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
             ArrayList<NearUserBean> list = createNearUsers(users,myUser);
             this.nearUsers = new ArrayList<NearUserBean>();
             this.nearUsers.addAll(list);
         }
 
         /** 将UserBean集合转换为NearUserBean集合*/
-        private ArrayList<NearUserBean> createNearUsers(ArrayList<User> users, User myUser) {
+        private ArrayList<NearUserBean> createNearUsers(ArrayList<LocationUserAvatar> users, LocationUserAvatar myUser) {
             ArrayList<NearUserBean> nearUsers=new ArrayList<NearUserBean>();
-            for(User user:users){
+            for(LocationUserAvatar user:users){
                 LatLng myLatLng=new LatLng(myUser.getMLocationLatitude(), myUser.getMLocationLongitude());
                 LatLng contactLatLng=new LatLng(user.getMLocationLatitude(),user.getMLocationLongitude());
                 int distance=(int) DistanceUtil.getDistance(myLatLng,contactLatLng);
@@ -198,12 +198,12 @@ public class NearPeopleActivity extends BaseActivity {
         }
         /** 包含与当前用户距离的Bean*/
         class NearUserBean{
-            User user;
+            LocationUserAvatar user;
             int distance;
-            public User getUser() {
+            public LocationUserAvatar getUser() {
                 return user;
             }
-            public void setUser(User user) {
+            public void setUser(LocationUserAvatar user) {
                 this.user = user;
             }
             public int getDistance() {
@@ -212,7 +212,7 @@ public class NearPeopleActivity extends BaseActivity {
             public void setDistance(int distance) {
                 this.distance = distance;
             }
-            public NearUserBean(User user, int distance) {
+            public NearUserBean(LocationUserAvatar user, int distance) {
                 super();
                 this.user = user;
                 this.distance = distance;
@@ -227,7 +227,7 @@ public class NearPeopleActivity extends BaseActivity {
          * 将新下载的用户集合添加至原有集合
          * @param users
          */
-        public void addUsers(ArrayList<User> users) {
+        public void addUsers(ArrayList<LocationUserAvatar> users) {
 //            ArrayList<NearUser> list = createNearUsers(users, myUser);
 //            this.nearUsers.addAll(list);
 //            notifyDataSetChanged();
@@ -241,9 +241,9 @@ public class NearPeopleActivity extends BaseActivity {
      *
      */
     class UploadLocationTask extends AsyncTask<Void, Void, Boolean>{
-        User user;
+        LocationUserAvatar user;
         
-        public UploadLocationTask(User user) {
+        public UploadLocationTask(LocationUserAvatar user) {
             super();
             this.user = user;
         }
@@ -264,15 +264,15 @@ public class NearPeopleActivity extends BaseActivity {
      * @author yao
      *
      */
-    class DownloadLocationTask extends AsyncTask<Void, Void, ArrayList<User>>{
+    class DownloadLocationTask extends AsyncTask<Void, Void, ArrayList<LocationUserAvatar>>{
         @Override
-        protected ArrayList<User> doInBackground(Void... params) {
+        protected ArrayList<LocationUserAvatar> doInBackground(Void... params) {
             String userName=SuperWeChatApplication.getInstance().getUserName();
-            ArrayList<User> users=null;//NetUtil.downloadLocation(userName, mPageId, PAGE_SIZE);
+            ArrayList<LocationUserAvatar> users=null;//NetUtil.downloadLocation(userName, mPageId, PAGE_SIZE);
             return users;
         }
         @Override
-        protected void onPostExecute(ArrayList<User> users) {
+        protected void onPostExecute(ArrayList<LocationUserAvatar> users) {
             if(users!=null){
                 if(mAdapter==null){
                     mAdapter=new NearPeopleAdapter(mInstance, users);

@@ -40,12 +40,12 @@ import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.adapter.GroupAdapter;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
 
 public class GroupsActivity extends BaseActivity {
 	public static final String TAG = "GroupsActivity";
 	private ListView groupListView;
-	protected ArrayList<Group> grouplist;
+	protected ArrayList<GroupAvatar> grouplist;
 	private GroupAdapter groupAdapter;
 	private InputMethodManager inputMethodManager;
 	public static GroupsActivity instance;
@@ -233,7 +233,7 @@ public class GroupsActivity extends BaseActivity {
         public void onReceive(Context context, Intent intent) {
             Log.e(TAG,"groupAdapter.getCount()="+groupAdapter.getCount());
             if(groupAdapter.getCount()>=3){
-                ArrayList<Group> list = SuperWeChatApplication.getInstance().getGroupList();
+                ArrayList<GroupAvatar> list = SuperWeChatApplication.getInstance().getGroupList();
                 if(!grouplist.containsAll(list)){
                     groupAdapter.initList(list);
 					groupAdapter.notifyDataSetChanged();

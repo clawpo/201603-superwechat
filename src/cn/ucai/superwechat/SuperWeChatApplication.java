@@ -21,10 +21,9 @@ import com.easemob.EMCallBack;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import cn.ucai.superwechat.bean.Contact;
-import cn.ucai.superwechat.bean.Group;
-import cn.ucai.superwechat.bean.Member;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.GroupAvatar;
+import cn.ucai.superwechat.bean.MemberUserAvatar;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.RequestManager;
 
 public class SuperWeChatApplication extends Application {
@@ -121,63 +120,63 @@ public class SuperWeChatApplication extends Application {
 	}
 
 	/**全局的当前登录用户对象*/
-	private User user;
+	private UserAvatar user;
 	/**全局的当前登录用户的好友列表*/
-	private ArrayList<Contact> contactList = new ArrayList<Contact>();
+	private ArrayList<UserAvatar> contactList = new ArrayList<UserAvatar>();
 	/**全局的当前登录用户的好友集合*/
-	private HashMap<String,Contact> userList = new HashMap<String, Contact>();
+	private HashMap<String,UserAvatar> userList = new HashMap<String, UserAvatar>();
 	/**全局的群组集合*/
-	private ArrayList<Group> groupList = new ArrayList<Group>();
+	private ArrayList<GroupAvatar> groupList = new ArrayList<GroupAvatar>();
 	/**全局的当前公共群列表*/
-	private ArrayList<Group> publicGroupList = new ArrayList<Group>();
+	private ArrayList<GroupAvatar> publicGroupList = new ArrayList<GroupAvatar>();
 	/**全局的群组成员列表*/
-	private HashMap<String,ArrayList<Member>> groupMembers = new HashMap<String, ArrayList<Member>>();
+	private HashMap<String,ArrayList<MemberUserAvatar>> groupMembers = new HashMap<String, ArrayList<MemberUserAvatar>>();
 
-	public User getUser() {
+	public UserAvatar getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(UserAvatar user) {
 		this.user = user;
 	}
 
-	public ArrayList<Contact> getContactList() {
+	public ArrayList<UserAvatar> getContactList() {
 		return contactList;
 	}
 
-	public void setContactList(ArrayList<Contact> contactList) {
+	public void setContactList(ArrayList<UserAvatar> contactList) {
 		this.contactList = contactList;
 	}
 
-	public HashMap<String, Contact> getUserList() {
+	public HashMap<String, UserAvatar> getUserList() {
 		return userList;
 	}
 
-	public void setUserList(HashMap<String, Contact> userList) {
+	public void setUserList(HashMap<String, UserAvatar> userList) {
 		this.userList = userList;
 	}
 
-	public ArrayList<Group> getGroupList() {
+	public ArrayList<GroupAvatar> getGroupList() {
 		return groupList;
 	}
 
-	public void setGroupList(ArrayList<Group> groupList) {
+	public void setGroupList(ArrayList<GroupAvatar> groupList) {
 		this.groupList = groupList;
 	}
 
-	public ArrayList<Group> getPublicGroupList() {
+	public ArrayList<GroupAvatar> getPublicGroupList() {
 		return publicGroupList;
 	}
 
-	public void setPublicGroupList(ArrayList<Group> publicGroupList) {
+	public void setPublicGroupList(ArrayList<GroupAvatar> publicGroupList) {
 		this.publicGroupList = publicGroupList;
 	}
 
-	public HashMap<String, ArrayList<Member>> getGroupMembers() {
+	public HashMap<String, ArrayList<MemberUserAvatar>> getGroupMembers() {
 		return groupMembers;
 	}
 
-	public void setGroupMembers(HashMap<String, ArrayList<Member>> groupMembers) {
+	public void setGroupMembers(HashMap<String, ArrayList<MemberUserAvatar>> groupMembers) {
 		this.groupMembers = groupMembers;
 	}
 }

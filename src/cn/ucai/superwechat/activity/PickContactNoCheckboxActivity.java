@@ -31,7 +31,7 @@ import cn.ucai.superwechat.Constant;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.adapter.ContactAdapter;
-import cn.ucai.superwechat.bean.Contact;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.widget.Sidebar;
 
 public class PickContactNoCheckboxActivity extends BaseActivity {
@@ -39,7 +39,7 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 	private ListView listView;
 	private Sidebar sidebar;
 	protected ContactAdapter contactAdapter;
-	private ArrayList<Contact> contactList;
+	private ArrayList<UserAvatar> contactList;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +48,7 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 		listView = (ListView) findViewById(R.id.list);
 		sidebar = (Sidebar) findViewById(R.id.sidebar);
 		sidebar.setListView(listView);
-		contactList = new ArrayList<Contact>();
+		contactList = new ArrayList<UserAvatar>();
 		// 获取设置contactlist
 		getContactList();
 		// 设置adapter
@@ -67,7 +67,7 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 	protected void onListItemClick(int position) {
 //		if (position != 0) {
 			setResult(RESULT_OK, new Intent().putExtra("username", contactAdapter.getItem(position)
-					.getMContactCname()));
+					.getMUserName()));
 			finish();
 //		}
 	}
@@ -78,18 +78,18 @@ public class PickContactNoCheckboxActivity extends BaseActivity {
 
 	private void getContactList() {
 		contactList.clear();
-		Map<String, Contact> users = SuperWeChatApplication.getInstance().getUserList();
-		Iterator<Entry<String, Contact>> iterator = users.entrySet().iterator();
+		Map<String, UserAvatar> users = SuperWeChatApplication.getInstance().getUserList();
+		Iterator<Entry<String, UserAvatar>> iterator = users.entrySet().iterator();
 		while (iterator.hasNext()) {
-			Entry<String, Contact> entry = iterator.next();
+			Entry<String, UserAvatar> entry = iterator.next();
 			if (!entry.getKey().equals(Constant.NEW_FRIENDS_USERNAME) && !entry.getKey().equals(Constant.GROUP_USERNAME) && !entry.getKey().equals(Constant.CHAT_ROOM) && !entry.getKey().equals(Constant.CHAT_ROBOT))
 				contactList.add(entry.getValue());
 		}
 		// 排序
-		Collections.sort(contactList, new Comparator<Contact>() {
+		Collections.sort(contactList, new Comparator<UserAvatar>() {
 
 			@Override
-			public int compare(Contact lhs, Contact rhs) {
+			public int compare(UserAvatar lhs, UserAvatar rhs) {
 				return lhs.getMUserNick().compareTo(rhs.getMUserNick());
 			}
 		});

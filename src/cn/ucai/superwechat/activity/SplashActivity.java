@@ -13,11 +13,12 @@ import android.widget.TextView;
 
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
+
 import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.db.UserDao;
 import cn.ucai.superwechat.task.DownloadAllGroupTask;
 import cn.ucai.superwechat.task.DownloadContactListTask;
@@ -58,7 +59,7 @@ public class SplashActivity extends BaseActivity {
             Log.e(TAG,"start download contact,group,public group");
             String username = SuperWeChatApplication.getInstance().getUserName();
             UserDao dao = new UserDao(mContext);
-            User user = dao.findUserByUserName(username);
+            UserAvatar user = dao.findUserByUserName(username);
             SuperWeChatApplication.getInstance().setUser(user);
             new DownloadContactListTask(mContext,username).execute();
             new DownloadAllGroupTask(mContext,username).execute();

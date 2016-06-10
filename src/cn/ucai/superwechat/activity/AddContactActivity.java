@@ -37,8 +37,8 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
-import cn.ucai.superwechat.bean.Contact;
-import cn.ucai.superwechat.bean.User;
+import cn.ucai.superwechat.bean.Result;
+import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.utils.UserUtils;
@@ -110,7 +110,7 @@ public class AddContactActivity extends BaseActivity{
                     String path = new ApiParams()
                             .with(I.User.USER_NAME,toAddUsername)
                             .getRequestUrl(I.REQUEST_FIND_USER);
-                    executeRequest(new GsonRequest<User>(path, User.class,
+                    executeRequest(new GsonRequest<Result>(path, Result.class,
                             responseFindUserListener(),errorListener()));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -120,24 +120,27 @@ public class AddContactActivity extends BaseActivity{
 
 	}
 
-    private Response.Listener<User> responseFindUserListener() {
-        return new Response.Listener<User>() {
+    private Response.Listener<Result> responseFindUserListener() {
+        return new Response.Listener<Result>() {
             @Override
-            public void onResponse(User user) {
-                if(user!=null){
-                    mtvNothing.setVisibility(View.GONE);
-                    HashMap<String, Contact> userList =
-                            SuperWeChatApplication.getInstance().getUserList();
-                    if (userList.containsKey(user.getMUserName())){
-                        Intent intent = new Intent();
-                        intent.setClass(mContext, UserProfileActivity.class);
-                        intent.putExtra("username", user.getMUserName());
-                        mContext.startActivity(intent);
-                    } else {
-                        //服务器存在此用户，显示此用户和添加按钮
-                        searchedUserLayout.setVisibility(View.VISIBLE);
-                        UserUtils.setUserBeanAvatar(user,avatar);
-                        UserUtils.setUserBeanNick(user,nameText);
+            public void onResponse(Result result) {
+                if(result.isRetMsg()){
+                    UserAvatar user = (UserAvatar) result.getRetData();
+                    if(user!=null) {
+                        mtvNothing.setVisibility(View.GONE);
+                        HashMap<String, UserAvatar> userList =
+                                SuperWeChatApplication.getInstance().getUserList();
+                        if (userList.containsKey(user.getMUserName())) {
+                            Intent intent = new Intent();
+                            intent.setClass(mContext, UserProfileActivity.class);
+                            intent.putExtra("username", user.getMUserName());
+                            mContext.startActivity(intent);
+                        } else {
+                            //服务器存在此用户，显示此用户和添加按钮
+                            searchedUserLayout.setVisibility(View.VISIBLE);
+                            UserUtils.setUserBeanAvatar(user, avatar);
+                            UserUtils.setUserBeanNick(user, nameText);
+                        }
                     }
                 } else {
                     mtvNothing.setVisibility(View.VISIBLE);

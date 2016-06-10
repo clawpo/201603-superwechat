@@ -48,7 +48,7 @@ import java.util.List;
 
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
-import cn.ucai.superwechat.bean.Group;
+import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.task.DownloadPublicGroupTask;
 import cn.ucai.superwechat.utils.UserUtils;
 
@@ -57,7 +57,7 @@ public class PublicGroupsActivity extends BaseActivity {
 	private ListView listView;
 	private GroupsAdapter adapter;
 	
-	private ArrayList<Group> groupsList;
+	private ArrayList<GroupAvatar> groupsList;
 	private boolean isLoading;
 	private boolean isFirstLoading = true;
 	private boolean hasMoreData = true;
@@ -74,7 +74,7 @@ public class PublicGroupsActivity extends BaseActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_public_groups);
-		groupsList = new ArrayList<Group>();
+		groupsList = new ArrayList<GroupAvatar>();
         initView();
         //获取及显示数据
         loadAndShowData();
@@ -175,8 +175,8 @@ public class PublicGroupsActivity extends BaseActivity {
 	private void loadAndShowData(){
         try {
             isLoading = true;
-            ArrayList<Group> publicGroupList = SuperWeChatApplication.getInstance().getPublicGroupList();
-            for(Group group: publicGroupList){
+            ArrayList<GroupAvatar> publicGroupList = SuperWeChatApplication.getInstance().getPublicGroupList();
+            for(GroupAvatar group: publicGroupList){
                 if(!groupsList.contains(group)) {
                     groupsList.add(group);
                 }
@@ -237,8 +237,8 @@ public class PublicGroupsActivity extends BaseActivity {
 	private class GroupsAdapter extends BaseAdapter implements SectionIndexer {
 
 		private LayoutInflater inflater;
-        ArrayList<Group> mGroupList;
-        ArrayList<Group> mCopyGroupList;
+        ArrayList<GroupAvatar> mGroupList;
+        ArrayList<GroupAvatar> mCopyGroupList;
         private SparseIntArray positionOfSection;
         private SparseIntArray sectionOfPosition;
         List<String> list;
@@ -246,10 +246,10 @@ public class PublicGroupsActivity extends BaseActivity {
         private boolean notiyfyByFilter;
         Context mContext;
 
-		public GroupsAdapter(Context context, int res, ArrayList<Group> groups) {
+		public GroupsAdapter(Context context, int res, ArrayList<GroupAvatar> groups) {
 			this.inflater = LayoutInflater.from(context);
             mGroupList = groups;
-            mCopyGroupList = new ArrayList<Group>();
+            mCopyGroupList = new ArrayList<GroupAvatar>();
             mCopyGroupList.addAll(groups);
 		}
 
@@ -259,7 +259,7 @@ public class PublicGroupsActivity extends BaseActivity {
         }
 
         @Override
-        public Group getItem(int position) {
+        public GroupAvatar getItem(int position) {
             return mGroupList.get(position);
         }
 
@@ -274,7 +274,7 @@ public class PublicGroupsActivity extends BaseActivity {
 				convertView = inflater.inflate(R.layout.row_group, null);
 			}
 
-            Group group = getItem(position);
+            GroupAvatar group = getItem(position);
             ((TextView) convertView.findViewById(R.id.name)).setText(group.getMGroupName());
             UserUtils.setGroupBeanAvatar(group.getMGroupHxid(),((NetworkImageView) convertView.findViewById(R.id.avatar)));
 
@@ -313,9 +313,9 @@ public class PublicGroupsActivity extends BaseActivity {
         }
 
         private class  MyFilter extends Filter{
-            List<Group> mOriginalList = null;
+            List<GroupAvatar> mOriginalList = null;
 
-            public MyFilter(List<Group> myList) {
+            public MyFilter(List<GroupAvatar> myList) {
                 this.mOriginalList = myList;
             }
 
@@ -323,7 +323,7 @@ public class PublicGroupsActivity extends BaseActivity {
             protected synchronized FilterResults performFiltering(CharSequence prefix) {
                 FilterResults results = new FilterResults();
                 if(mOriginalList==null){
-                    mOriginalList = new ArrayList<Group>();
+                    mOriginalList = new ArrayList<GroupAvatar>();
                 }
 
                 if(prefix==null || prefix.length()==0){
@@ -332,9 +332,9 @@ public class PublicGroupsActivity extends BaseActivity {
                 }else{
                     String prefixString = prefix.toString();
                     final int count = mOriginalList.size();
-                    final ArrayList<Group> newValues = new ArrayList<Group>();
+                    final ArrayList<GroupAvatar> newValues = new ArrayList<GroupAvatar>();
                     for(int i=0;i<count;i++){
-                        final Group group = mOriginalList.get(i);
+                        final GroupAvatar group = mOriginalList.get(i);
                         String username = UserUtils.getPinYinFromHanZi(group.getMGroupName());
                         if(username.contains(prefixString)){
                             newValues.add(group);
@@ -363,7 +363,7 @@ public class PublicGroupsActivity extends BaseActivity {
                                                        FilterResults results) {
                 if(results.values!=null) {
                     mOriginalList.clear();
-                    mOriginalList.addAll((List<Group>) results.values);
+                    mOriginalList.addAll((List<GroupAvatar>) results.values);
                     if (results.count > 0) {
                         notiyfyByFilter = true;
                         notifyDataSetChanged();
