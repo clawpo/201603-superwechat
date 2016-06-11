@@ -26,6 +26,7 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
+import com.google.gson.Gson;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
@@ -93,7 +94,7 @@ public class GroupSimpleDetailActivity extends BaseActivity {
             @Override
             public void onResponse(Result result) {
 				if(result.isRetMsg()) {
-                    GroupAvatar g = (GroupAvatar) result.getRetData();
+                    GroupAvatar g = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
                     if (g != null) {
                         group = g;
                         showGroupDetail();

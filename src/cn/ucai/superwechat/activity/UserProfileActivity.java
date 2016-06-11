@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.EMValueCallBack;
+import com.google.gson.Gson;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -209,7 +210,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
             @Override
             public void onResponse(Result result) {
 				if(result.isRetMsg()) {
-                    UserAvatar user = (UserAvatar) result.getRetData();
+                    UserAvatar user = new Gson().fromJson(result.getRetData().toString(),UserAvatar.class);
                     if (user!=null) {
                         updateRemoteNick(user.getMUserNick());
                     }
@@ -247,7 +248,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 									.show();
 							tvNickName.setText(nickName);
                             SuperWeChatApplication.currentUserNick = nickName;
-                            SuperWeChatApplication.getInstance().getUser().setMUserNick(nickName);
+                            SuperWeChatApplication.getInstance().getUser().setNick(nickName);
 						}
 					});
 				}

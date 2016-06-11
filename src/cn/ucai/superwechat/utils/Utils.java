@@ -31,6 +31,7 @@ public class Utils {
      * @return
      */
     public static <T> ArrayList<T> array2List(T[] ary){
+        if(ary==null)return null;
         List<T> list = Arrays.asList(ary);
         ArrayList<T> arrayList=new ArrayList<T>(list);
         return arrayList;

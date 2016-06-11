@@ -32,6 +32,7 @@ import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -156,7 +157,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
             @Override
             public void onResponse(Result result) {
                 if(result.isRetMsg()){
-					UserAvatar user = (UserAvatar) result.getRetData();
+					UserAvatar user = new Gson().fromJson(result.getRetData().toString(),UserAvatar.class);
                     UserUtils.setUserBeanNick(user,name);
                 }
             }
@@ -230,7 +231,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
             @Override
             public void onResponse(Result result) {
                 if(result!=null && result.isRetMsg()){
-                    GroupAvatar group = (GroupAvatar) result.getRetData();
+                    GroupAvatar group = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
                     new DownloadAllGroupMembersTask(context,group.getMGroupHxid()).execute();
                     try {
                         final String str2 = context.getResources().getString(R.string.Has_agreed_to);

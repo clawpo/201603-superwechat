@@ -46,6 +46,7 @@ import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.EMLog;
 import com.easemob.util.NetUtils;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -307,7 +308,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
             @Override
             public void onResponse(Result result) {
                 if(result.isRetMsg()){
-                    GroupAvatar group = (GroupAvatar) result.getRetData();
+                    GroupAvatar group = new Gson().fromJson(result.getRetData().toString(), GroupAvatar.class);
                     updateGroupName(newGroupName);
                     mGroup = group;
                     ArrayList<GroupAvatar> groupList = SuperWeChatApplication.getInstance().getGroupList();
@@ -873,7 +874,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                             @Override
                             public void onResponse(Result result) {
                                 if(result.isRetMsg()){
-                                    MemberUserAvatar user = (MemberUserAvatar) result.getRetData();
+                                    MemberUserAvatar user = new Gson().fromJson(result.getRetData().toString(),MemberUserAvatar.class) ;
                                     deleteMembersFromGroup(user);
                                 }else{
                                     Toast.makeText(getApplicationContext(), st14, Toast.LENGTH_LONG).show();

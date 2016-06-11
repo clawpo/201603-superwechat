@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
+import com.google.gson.Gson;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
@@ -71,7 +72,7 @@ public class PublicGroupsSeachActivity extends BaseActivity{
             @Override
             public void onResponse(Result result) {
                 if(result.isRetMsg()) {
-                    GroupAvatar group = (GroupAvatar) result.getRetData();
+                    GroupAvatar group = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
                     if (group != null) {
                         searchedGroup = group;
                         pd.dismiss();

@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.volley.Response;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import cn.ucai.superwechat.bean.MemberUserAvatar;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
+import cn.ucai.superwechat.utils.Utils;
 
 /**
  * Created by sks on 2016/4/5.
@@ -54,7 +56,7 @@ public class DownloadAllGroupMembersTask extends BaseActivity {
             public void onResponse(Result result) {
                 Log.e(TAG, "responseDownloadGroupMembersListener");
                 if (result.isRetMsg()) {
-                    ArrayList<MemberUserAvatar> list = (ArrayList<MemberUserAvatar>) result.getRetData();
+                    ArrayList<MemberUserAvatar> list = Utils.array2List(new Gson().fromJson(result.getRetData().toString(),MemberUserAvatar[].class));
                     Log.e(TAG, "responseDownloadGroupMembersListener,userList=" + list);
                     if (list == null) {
                         return;

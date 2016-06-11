@@ -24,6 +24,7 @@ import java.util.HashMap;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.MemberUserAvatar;
 import cn.ucai.superwechat.bean.UserAvatar;
+import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.RequestManager;
 
 public class SuperWeChatApplication extends Application {
@@ -120,7 +121,7 @@ public class SuperWeChatApplication extends Application {
 	}
 
 	/**全局的当前登录用户对象*/
-	private UserAvatar user;
+	private UserBean user;
 	/**全局的当前登录用户的好友列表*/
 	private ArrayList<UserAvatar> contactList = new ArrayList<UserAvatar>();
 	/**全局的当前登录用户的好友集合*/
@@ -132,11 +133,11 @@ public class SuperWeChatApplication extends Application {
 	/**全局的群组成员列表*/
 	private HashMap<String,ArrayList<MemberUserAvatar>> groupMembers = new HashMap<String, ArrayList<MemberUserAvatar>>();
 
-	public UserAvatar getUser() {
+	public UserBean getUser() {
 		return user;
 	}
 
-	public void setUser(UserAvatar user) {
+	public void setUser(UserBean user) {
 		this.user = user;
 	}
 

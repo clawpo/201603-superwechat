@@ -53,6 +53,7 @@ import com.easemob.chat.TextMessageBody;
 import com.easemob.util.EMLog;
 import com.easemob.util.HanziToPinyin;
 import com.easemob.util.NetUtils;
+import com.google.gson.Gson;
 import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
@@ -579,7 +580,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
                 @Override
                 public void onResponse(Result result) {
 					if(result.isRetMsg()) {
-                        UserAvatar contact = (UserAvatar) result.getRetData();
+                        UserAvatar contact = new Gson().fromJson(result.getRetData().toString(), UserAvatar.class);
                         if (contact != null) {
                             ArrayList<UserAvatar> contactList = SuperWeChatApplication.getInstance().getContactList();
                             HashMap<String, UserAvatar> userList = SuperWeChatApplication.getInstance().getUserList();

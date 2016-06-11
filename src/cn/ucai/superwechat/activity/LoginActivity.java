@@ -31,6 +31,7 @@ import com.android.volley.Response;
 import com.easemob.EMCallBack;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
+import com.google.gson.Gson;
 import com.squareup.okhttp.Callback;
 import com.squareup.okhttp.Request;
 
@@ -50,6 +51,7 @@ import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.bean.UserAvatar;
+import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.OkHttpUtils;
@@ -215,9 +217,9 @@ public class LoginActivity extends BaseActivity {
 
     private void loginAppServer() {
         UserDao dao = new UserDao(mContext);
-        UserAvatar user = dao.findUserByUserName(currentUsername);
+        UserBean user = dao.findUserByUserName(currentUsername);
         if(user!=null) {
-            if(user.getMUserPassword().equals(MD5.getData(currentPassword))){
+            if(user.getPassword().equals(MD5.getData(currentPassword))){
                 saveUser(user);
                 loginSuccess();
             } else {
@@ -246,12 +248,15 @@ public class LoginActivity extends BaseActivity {
         return new Response.Listener<Result>() {
             @Override
             public void onResponse(Result result) {
+                Log.e(TAG,"resule="+result);
 				if(result.isRetMsg()){
-                    UserAvatar userBean = (UserAvatar) result.getRetData();
-					saveUser(userBean);
-                    userBean.setMUserPassword(MD5.getData(currentPassword));
+                    Log.e(TAG,"resule.getRetData()="+result.getRetData());
+                    Gson mGson = new Gson();
+                    UserAvatar userBean = mGson.fromJson(result.getRetData().toString(),UserAvatar.class);
+                    UserBean u = new UserBean(userBean.getMUserName(),MD5.getData(currentPassword),userBean.getMUserNick());
+					saveUser(u);
 					UserDao dao = new UserDao(mContext);
-					dao.addUser(userBean);
+					dao.addUser(u);
 					loginSuccess();
 				}else{
 					pd.dismiss();
@@ -262,13 +267,13 @@ public class LoginActivity extends BaseActivity {
     }
 
     /**保存当前登录的用户到全局变量*/
-    private void saveUser(UserAvatar user) {
+    private void saveUser(UserBean user) {
         SuperWeChatApplication instance = SuperWeChatApplication.getInstance();
         instance.setUser(user);
         // 登陆成功，保存用户名密码
         instance.setUserName(currentUsername);
         instance.setPassword(currentPassword);
-        SuperWeChatApplication.currentUserNick = user.getMUserNick();
+        SuperWeChatApplication.currentUserNick = user.getNick();
     }
 
     private void loginSuccess() {

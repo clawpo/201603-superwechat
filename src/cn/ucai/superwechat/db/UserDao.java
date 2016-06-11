@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import cn.ucai.superwechat.I;
-import cn.ucai.superwechat.bean.UserAvatar;
+import cn.ucai.superwechat.bean.UserBean;
 
 
 public class UserDao extends SQLiteOpenHelper {
@@ -32,36 +32,37 @@ public class UserDao extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
     }
 
-    public boolean addUser(UserAvatar user){
+    public boolean addUser(UserBean user){
         ContentValues values = new ContentValues();
-        values.put(I.User.USER_NAME,user.getMUserName());
-        values.put(I.User.NICK,user.getMUserNick());
-        values.put(I.User.PASSWORD,user.getMUserPassword());
+        values.put(I.User.USER_NAME,user.getName());
+        values.put(I.User.NICK,user.getNick());
+        values.put(I.User.PASSWORD,user.getPassword());
         SQLiteDatabase db = getWritableDatabase();
         long insert = db.insert(TABLE_NAME, null, values);
         return insert>0;
     }
 
-    public UserAvatar findUserByUserName(String userName){
+    public UserBean findUserByUserName(String userName){
+        if(userName==null||userName.isEmpty())return null;
         SQLiteDatabase db = getReadableDatabase();
         String sql = "select * from "+ TABLE_NAME + " where " + I.User.USER_NAME  + "=?";
         Cursor c = db.rawQuery(sql,new String []{userName});
         if(c.moveToNext()){
             String nick = c.getString(c.getColumnIndex(I.User.NICK));
             String password = c.getString(c.getColumnIndex(I.User.PASSWORD));
-            return new UserAvatar(userName,password,nick);
+            return new UserBean(userName,password,nick);
         }
         c.close();
         return null;
     }
 
-    public boolean updateUser(UserAvatar user){
+    public boolean updateUser(UserBean user){
         ContentValues values = new ContentValues();
-        values.put(I.User.USER_NAME,user.getMUserName());
-        values.put(I.User.NICK,user.getMUserNick());
-        values.put(I.User.PASSWORD,user.getMUserPassword());
+        values.put(I.User.USER_NAME,user.getName());
+        values.put(I.User.NICK,user.getNick());
+        values.put(I.User.PASSWORD,user.getPassword());
         SQLiteDatabase db = getWritableDatabase();
-        long insert = db.update(TABLE_NAME, values,I.User.USER_NAME+"=?",new String[]{user.getMUserName()});
+        long insert = db.update(TABLE_NAME, values,I.User.USER_NAME+"=?",new String[]{user.getName()});
         return insert>0;
     }
 }

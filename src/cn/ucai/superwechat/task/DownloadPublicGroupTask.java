@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.volley.Response;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import cn.ucai.superwechat.bean.Pager;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
+import cn.ucai.superwechat.utils.Utils;
 
 public class DownloadPublicGroupTask extends BaseActivity {
     private static final String TAG = DownloadPublicGroupTask.class.getName();
@@ -59,7 +61,7 @@ public class DownloadPublicGroupTask extends BaseActivity {
                 if(result.isRetMsg()) {
                     Pager pager = (Pager) result.getRetData();
                     if(pager!=null) {
-                        List<GroupAvatar> list = (List<GroupAvatar>) pager.getPageData();
+                        List<GroupAvatar> list = Utils.array2List(new Gson().fromJson(result.getRetData().toString(),GroupAvatar[].class));
                         if (list != null) {
                             Log.e(TAG, "DownloadPublicGroup,groups size=" + list.size());
                             ArrayList<GroupAvatar> publicGroupList =

@@ -20,6 +20,7 @@ import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.MemberUserAvatar;
 import cn.ucai.superwechat.bean.UserAvatar;
+import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.RequestManager;
 import cn.ucai.superwechat.domain.EMUser;
 
@@ -109,9 +110,9 @@ public class UserUtils {
 	}
 
     public static void setCurrentUserAvatar(NetworkImageView imageView) {
-        UserAvatar user = SuperWeChatApplication.getInstance().getUser();
+        UserBean user = SuperWeChatApplication.getInstance().getUser();
         if(user!=null){
-            setUserAvatar(getAvatarPath(user.getMUserName()),imageView);
+            setUserAvatar(getAvatarPath(user.getName()),imageView);
         }
     }
 
@@ -187,9 +188,9 @@ public class UserUtils {
     }
 
     public static void setCurrentUserBeanNick(TextView textView){
-        UserAvatar user = SuperWeChatApplication.getInstance().getUser();
+        UserBean user = SuperWeChatApplication.getInstance().getUser();
         if(textView != null && user != null){
-            textView.setText(user.getMUserNick());
+            textView.setText(user.getNick());
         }
     }
 

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class UserAvatar implements Serializable {
 	private String muserName;
-	private String muserPassword;
+//	private String muserPassword;
 	private String muserNick;
 //	private Integer muserUnreadMsgCount;
 	private Integer mavatarId;
@@ -19,11 +19,11 @@ public class UserAvatar implements Serializable {
 		super();
 	}
 
-    public UserAvatar(String muserName,String muserPassword,String muserNick){
-        this.muserName = muserName;
-        this.muserPassword = muserPassword;
-        this.muserNick = muserNick;
-    }
+//    public UserAvatar(String muserName,String muserPassword,String muserNick){
+//        this.muserName = muserName;
+//        this.muserPassword = muserPassword;
+//        this.muserNick = muserNick;
+//    }
 
 	public UserAvatar(String muserName/*, String muserPassword*/, String muserNick/*, Integer muserUnreadMsgCount*/,
 			Integer mavatarId/*, String mavatarUserName*/, String mavatarPath, Integer mavatarType,
@@ -48,13 +48,13 @@ public class UserAvatar implements Serializable {
 		this.muserName = muserName;
 	}
 
-	public String getMUserPassword() {
-		return muserPassword;
-	}
-
-	public void setMUserPassword(String muserPassword) {
-		this.muserPassword = muserPassword;
-	}
+//	public String getMUserPassword() {
+//		return muserPassword;
+//	}
+//
+//	public void setMUserPassword(String muserPassword) {
+//		this.muserPassword = muserPassword;
+//	}
 
 	public String getMUserNick() {
 		return muserNick;

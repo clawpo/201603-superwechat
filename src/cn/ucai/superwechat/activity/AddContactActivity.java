@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -29,6 +30,7 @@ import android.widget.Toast;
 import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.chat.EMContactManager;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 
@@ -98,8 +100,9 @@ public class AddContactActivity extends BaseActivity{
                     startActivity(new Intent(mContext, AlertDialog.class).putExtra("msg", st));
                     return;
                 }
-
-                if(SuperWeChatApplication.getInstance().getUserName().equals(nameText.getText().toString())){
+                Log.e("add","username="+SuperWeChatApplication.getInstance().getUserName());
+                Log.e("add","add username="+name);
+                if(SuperWeChatApplication.getInstance().getUserName().equals(name)){
                     String str = getString(R.string.not_add_myself);
                     startActivity(new Intent(mContext, AlertDialog.class).putExtra("msg", str));
                     return;
@@ -125,7 +128,7 @@ public class AddContactActivity extends BaseActivity{
             @Override
             public void onResponse(Result result) {
                 if(result.isRetMsg()){
-                    UserAvatar user = (UserAvatar) result.getRetData();
+                    UserAvatar user = new Gson().fromJson(result.getRetData().toString(),UserAvatar.class);
                     if(user!=null) {
                         mtvNothing.setVisibility(View.GONE);
                         HashMap<String, UserAvatar> userList =

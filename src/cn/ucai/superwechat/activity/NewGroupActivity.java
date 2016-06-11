@@ -31,6 +31,7 @@ import com.android.volley.Response;
 import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
+import com.google.gson.Gson;
 
 import java.io.File;
 
@@ -40,6 +41,7 @@ import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.bean.UserAvatar;
+import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.OkHttpUtils;
@@ -198,14 +200,14 @@ public class NewGroupActivity extends BaseActivity {
         boolean isExam = !memberCheckbox.isChecked();
         File file = new File(ImageUtils.getAvatarPath(activity, I.AVATAR_TYPE_GROUP_PATH),
                 avatarName + I.AVATAR_SUFFIX_JPG);
-        UserAvatar user = SuperWeChatApplication.getInstance().getUser();
+        UserBean user = SuperWeChatApplication.getInstance().getUser();
         OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
         utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
                 .addParam(I.KEY_REQUEST, I.REQUEST_CREATE_GROUP)//添加上传的请求参数
                 .addParam(I.Group.HX_ID,hxid)
                 .addParam(I.Group.NAME,groupName)
                 .addParam(I.Group.DESCRIPTION,desc)
-                .addParam(I.Group.OWNER,user.getMUserName())
+                .addParam(I.Group.OWNER,user.getName())
                 .addParam(I.Group.IS_PUBLIC,isPublic+"")
                 .addParam(I.Group.ALLOW_INVITES,isExam+"")
                 .targetClass(Result.class)//设置服务端返回json数据的解析类型
@@ -214,7 +216,7 @@ public class NewGroupActivity extends BaseActivity {
                     @Override
                     public void onSuccess(Result result) {
                         if(result.isRetMsg()){
-                            GroupAvatar group = (GroupAvatar) result.getRetData();
+                            GroupAvatar group = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
                             if(contacts!=null) {
                                 addGroupMembers(group, contacts);
                             }else{

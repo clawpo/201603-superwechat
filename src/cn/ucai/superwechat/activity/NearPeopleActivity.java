@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -93,10 +92,10 @@ public class NearPeopleActivity extends BaseActivity {
             }
             mCurrentLocation = location;
             //将当前用户的位置信息上传至服务器，然后从服务器再下载所有联系人的位置信息
-            LocationUserAvatar user = (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
-            user.setMLocationLatitude(location.getLatitude());
-            user.setMLocationLongitude(location.getLongitude());
-            Log.i("main", "latitude:"+location.getLatitude()+",longitude:"+location.getLongitude());
+//            LocationUserAvatar user = (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
+//            user.setMLocationLatitude(location.getLatitude());
+//            user.setMLocationLongitude(location.getLongitude());
+//            Log.i("main", "latitude:"+location.getLatitude()+",longitude:"+location.getLongitude());
 //            new UploadLocationTask();
         }
 
@@ -137,10 +136,10 @@ public class NearPeopleActivity extends BaseActivity {
             super();
             this.context = context;
             imageLoader=ImageLoader.getInstance(context);
-            myUser= (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
-            ArrayList<NearUserBean> list = createNearUsers(users,myUser);
-            this.nearUsers = new ArrayList<NearUserBean>();
-            this.nearUsers.addAll(list);
+//            myUser= (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
+//            ArrayList<NearUserBean> list = createNearUsers(users,myUser);
+//            this.nearUsers = new ArrayList<NearUserBean>();
+//            this.nearUsers.addAll(list);
         }
 
         /** 将UserBean集合转换为NearUserBean集合*/
