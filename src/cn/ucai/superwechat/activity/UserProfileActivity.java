@@ -298,7 +298,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
             public void onResponse(Result result) {
                 if(result.isRetMsg()){
                     UserUtils.setCurrentUserAvatar(headAvatar);
-                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_SHORT);
+                    Utils.showToast(mContext,getString(R.string.toast_updatephoto_success),Toast.LENGTH_SHORT);
                     dialog.dismiss();
                 }else{
                     Toast.makeText(UserProfileActivity.this, getString(R.string.toast_updatephoto_fail),
