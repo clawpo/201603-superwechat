@@ -3,11 +3,18 @@ package cn.ucai.superwechat.utils;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import cn.ucai.superwechat.I;
+import cn.ucai.superwechat.bean.Pager;
+import cn.ucai.superwechat.bean.Result;
 
 /**
  * Created by clawpo on 16/3/28.
@@ -55,5 +62,56 @@ public class Utils {
         msgStr = I.MSG_PREFIX_MSG + msgStr;
         int resId = context.getResources().getIdentifier(msgStr, "string", context.getPackageName());
         return context.getResources().getString(resId);
+    }
+
+//    public static <T> datas getResultDate(Object o,final T t){
+//        if(o!=null){
+//            Type type = new TypeToken<t>(){}.getClass();
+//            return new Gson().fromJson(o.toString(),type);
+//        }
+//        return null;
+//    }
+
+
+    public static <T> Result getResultFromJson(String jsonStr,Class<T> clazz){
+        Result result = new Result();
+        try {
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            result.setRetCode(jsonObject.getInt("retCode"));
+            result.setRetMsg(jsonObject.getBoolean("retMsg"));
+            JSONObject jsonRetData = jsonObject.getJSONObject("retData");
+            T t = new Gson().fromJson(jsonRetData.toString(),clazz);
+            result.setRetData(t);
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
+    public static <T> Result getPageResultFromJson(String jsonStr,Class<T> clazz){
+        Result result = new Result();
+        try {
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            result.setRetCode(jsonObject.getInt("retCode"));
+            result.setRetMsg(jsonObject.getBoolean("retMsg"));
+            JSONObject jsonPager = jsonObject.getJSONObject("retData");
+            Pager pager = new Pager();
+            pager.setCurrentPage(jsonPager.getInt("currentPage"));
+            pager.setMaxRecord(jsonPager.getInt("maxRecord"));
+            JSONArray array = jsonPager.getJSONArray("pageData");
+            List<T> list = new ArrayList<T>();
+            for(int i=0;i<array.length();i++){
+                JSONObject jsonGroupAvatar = array.getJSONObject(i);
+                T ga = new Gson().fromJson(jsonGroupAvatar.toString(),clazz);
+                list.add(ga);
+            }
+            pager.setPageData(list);
+            result.setRetData(pager);
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  null;
     }
 }
