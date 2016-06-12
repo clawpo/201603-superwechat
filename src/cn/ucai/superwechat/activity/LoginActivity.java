@@ -14,10 +14,12 @@
 package cn.ucai.superwechat.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -112,6 +114,41 @@ public class LoginActivity extends BaseActivity {
         setLoginClickListener();
         setUserNameTextChangedListener();
         setRegisterClickListener();
+        setServerUrlClickListener();
+	}
+
+    String serverUrl;
+    private void setServerUrlClickListener() {
+        findViewById(R.id.btnUrl).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final SharedPreferences sp = getSharedPreferences("server_url",MODE_PRIVATE);
+                serverUrl = sp.getString("url","");
+                View layout = View.inflate(mContext,R.layout.dialog_serverurl,null);
+                final EditText etServerUrl = (EditText) layout.findViewById(R.id.et_server_url);
+                final String url = etServerUrl.getText().toString();
+                if(serverUrl!=null){
+                    etServerUrl.setText(serverUrl);
+                }
+                Builder builder = new Builder(mContext);
+                builder.setTitle("设置服务器IP地址")
+                        .setView(layout)
+                        .setPositiveButton("设置", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                serverUrl = etServerUrl.getText().toString();
+                                if(serverUrl.isEmpty()){
+                                    return;
+                                }
+                                sp.edit().putString("url",serverUrl).commit();
+                                SuperWeChatApplication.SERVER_ROOT = serverUrl;
+                                Utils.showToast(mContext,"设置服务器IP地址成功",Toast.LENGTH_SHORT);
+                            }
+                        })
+                        .setNegativeButton("取消",null);
+                builder.create().show();
+            }
+        });
     }
 
     private void setUserNameTextChangedListener() {
