@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -83,18 +84,21 @@ public class Utils {
             result.setRetMsg(jsonObject.getBoolean("retMsg"));
             JSONObject jsonRetData = jsonObject.getJSONObject("retData");
             Log.e("Utils","jsonRetData="+jsonRetData);
+            String date;
             try {
-                String name = new String(jsonRetData.toString().getBytes(I.ISON8859_1), I.UTF_8);
-
-                System.out.println("name="+jsonRetData.toString());
+                date = URLDecoder.decode(jsonRetData.toString(),I.UTF_8);
+                Log.e("Utils","jsonRetData="+date);
+                T t = new Gson().fromJson(date,clazz);
+                result.setRetData(t);
+                return result;
 
             } catch (UnsupportedEncodingException e1) {
                 // TODO Auto-generated catch block
                 e1.printStackTrace();
+                T t = new Gson().fromJson(jsonRetData.toString(),clazz);
+                result.setRetData(t);
+                return result;
             }
-            T t = new Gson().fromJson(jsonRetData.toString(),clazz);
-            result.setRetData(t);
-            return result;
         }catch (Exception e){
             e.printStackTrace();
         }
