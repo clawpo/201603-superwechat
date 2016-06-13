@@ -1,6 +1,7 @@
 package cn.ucai.superwechat.utils;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -8,6 +9,7 @@ import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -80,8 +82,40 @@ public class Utils {
             result.setRetCode(jsonObject.getInt("retCode"));
             result.setRetMsg(jsonObject.getBoolean("retMsg"));
             JSONObject jsonRetData = jsonObject.getJSONObject("retData");
+            Log.e("Utils","jsonRetData="+jsonRetData);
+            try {
+                String name = new String(jsonRetData.toString().getBytes(I.ISON8859_1), I.UTF_8);
+
+                System.out.println("name="+jsonRetData.toString());
+
+            } catch (UnsupportedEncodingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
             T t = new Gson().fromJson(jsonRetData.toString(),clazz);
             result.setRetData(t);
+            return result;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return  null;
+    }
+
+    public static <T> Result getListResultFromJson(String jsonStr,Class<T> clazz){
+        Result result = new Result();
+        Log.e("Utils","jsonStr="+jsonStr);
+        try {
+            JSONObject jsonObject = new JSONObject(jsonStr);
+            result.setRetCode(jsonObject.getInt("retCode"));
+            result.setRetMsg(jsonObject.getBoolean("retMsg"));
+            JSONArray array = jsonObject.getJSONArray("retData");
+            List<T> list = new ArrayList<T>();
+            for(int i=0;i<array.length();i++){
+                JSONObject jsonGroupAvatar = array.getJSONObject(i);
+                T ga = new Gson().fromJson(jsonGroupAvatar.toString(),clazz);
+                list.add(ga);
+            }
+            result.setRetData(list);
             return result;
         }catch (Exception e){
             e.printStackTrace();

@@ -288,15 +288,19 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
         } catch (Exception e) {
             e.printStackTrace();
         }
-        executeRequest(new MultipartRequest<Result>(url,Result.class,null,
+        executeRequest(new MultipartRequest(url,null,
                 uploadAvatarByMultipartListener(),errorListener(),mimeType, multipartBody));
     }
 
-    private Response.Listener<Result> uploadAvatarByMultipartListener() {
-        return new Response.Listener<Result>() {
+    private Response.Listener<String> uploadAvatarByMultipartListener() {
+        return new Response.Listener<String>() {
             @Override
-            public void onResponse(Result result) {
-                if(result.isRetMsg()){
+			public void onResponse(String resultStr) {
+				Log.e("main","resultStr="+resultStr);
+				Result result = Utils.getResultFromJson(resultStr, Result.class);
+				Log.e("main","result="+result);
+				if(result!=null && result.isRetMsg()){
+//				Result result = Utils.getResultFromJson(resultStr, Result.class);
                     UserUtils.setCurrentUserAvatar(headAvatar);
                     Utils.showToast(mContext,getString(R.string.toast_updatephoto_success),Toast.LENGTH_SHORT);
                     dialog.dismiss();

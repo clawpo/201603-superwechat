@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.android.volley.Response;
-import com.google.gson.Gson;
+import com.android.volley.toolbox.StringRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,6 @@ import cn.ucai.superwechat.activity.BaseActivity;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.data.ApiParams;
-import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.utils.Utils;
 
 public class DownloadAllGroupTask extends BaseActivity {
@@ -42,18 +41,18 @@ public class DownloadAllGroupTask extends BaseActivity {
     }
 
     public void execute(){
-        executeRequest(new GsonRequest<Result>(path,Result.class,
-                responseDownloadAllGroupTaskListener(),errorListener()));
+        executeRequest(new StringRequest(path,responseDownloadAllGroupTaskListener(),errorListener()));
     }
 
-    private Response.Listener<Result> responseDownloadAllGroupTaskListener() {
-        return new Response.Listener<Result>() {
+    private Response.Listener<String> responseDownloadAllGroupTaskListener() {
+        return new Response.Listener<String>() {
             @Override
-            public void onResponse(Result result) {
-                Log.e(TAG,"DownloadAllGroup");
-                if(result.isRetMsg()) {
-                    List<GroupAvatar> list = Utils.array2List(new Gson().fromJson(result.getRetData().toString(), GroupAvatar[].class));
-                    if (list != null) {
+            public void onResponse(String s) {
+                try {
+                    Result result = (Result) Utils.getListResultFromJson(s, GroupAvatar.class);
+                    Log.e(TAG,"result="+result);
+                    if(result!=null && result.isRetMsg()){
+                        List<GroupAvatar> list = (List<GroupAvatar>) result.getRetData();
                         Log.e(TAG, "DownloadAllGroup,groups size=" + list.size());
                         ArrayList<GroupAvatar> groupList =
                                 SuperWeChatApplication.getInstance().getGroupList();
@@ -61,8 +60,30 @@ public class DownloadAllGroupTask extends BaseActivity {
                         groupList.addAll(list);
                         mContext.sendStickyBroadcast(new Intent("update_group_list"));
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         };
     }
+
+//    private Response.Listener<Result> responseDownloadAllGroupTaskListener() {
+//        return new Response.Listener<Result>() {
+//            @Override
+//            public void onResponse(Result result) {
+//                Log.e(TAG,"DownloadAllGroup");
+//                if(result.isRetMsg()) {
+//                    List<GroupAvatar> list = Utils.array2List(new Gson().fromJson(result.getRetData().toString(), GroupAvatar[].class));
+//                    if (list != null) {
+//                        Log.e(TAG, "DownloadAllGroup,groups size=" + list.size());
+//                        ArrayList<GroupAvatar> groupList =
+//                                SuperWeChatApplication.getInstance().getGroupList();
+//                        groupList.clear();
+//                        groupList.addAll(list);
+//                        mContext.sendStickyBroadcast(new Intent("update_group_list"));
+//                    }
+//                }
+//            }
+//        };
+//    }
 }

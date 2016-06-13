@@ -15,6 +15,8 @@ package cn.ucai.superwechat.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -31,8 +33,8 @@ import com.android.volley.Response;
 import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
-import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import cn.ucai.superwechat.I;
@@ -44,7 +46,7 @@ import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
-import cn.ucai.superwechat.data.OkHttpUtils;
+import cn.ucai.superwechat.data.MultipartRequest;
 import cn.ucai.superwechat.listener.OnSetAvatarListener;
 import cn.ucai.superwechat.utils.ImageUtils;
 import cn.ucai.superwechat.utils.Utils;
@@ -191,7 +193,10 @@ public class NewGroupActivity extends BaseActivity {
             }
         });
     }
-
+    private final String boundary = "apiclient-" + System.currentTimeMillis();
+    private final String mimeType = "multipart/form-data;boundary=" + boundary;
+    private byte[] multipartBody;
+    private Bitmap bitmap;
     private void createGroupAppServer(String hxid, String groupName, String desc, final UserAvatar[] contacts) {
         //注册环信的服务器 registerEMServer
         //先注册本地的服务器并上传头像 REQUEST_CREATE_GROUP -->okhttp
@@ -201,47 +206,114 @@ public class NewGroupActivity extends BaseActivity {
         File file = new File(ImageUtils.getAvatarPath(activity, I.AVATAR_TYPE_GROUP_PATH),
                 avatarName + I.AVATAR_SUFFIX_JPG);
         UserBean user = SuperWeChatApplication.getInstance().getUser();
-        OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
-        utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
-                .addParam(I.KEY_REQUEST, I.REQUEST_CREATE_GROUP)//添加上传的请求参数
-                .addParam(I.Group.HX_ID,hxid)
-                .addParam(I.Group.NAME,groupName)
-                .addParam(I.Group.DESCRIPTION,desc)
-                .addParam(I.Group.OWNER,user.getName())
-                .addParam(I.Group.IS_PUBLIC,isPublic+"")
-                .addParam(I.Group.ALLOW_INVITES,isExam+"")
-                .targetClass(Result.class)//设置服务端返回json数据的解析类型
-                .addFile(file)//添加上传的文件
-                .execute(new OkHttpUtils.OnCompleteListener<Result>() {//执行请求，并处理返回结果
-                    @Override
-                    public void onSuccess(Result result) {
-                        if(result.isRetMsg()){
-                            GroupAvatar group = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
-                            if(contacts!=null) {
-                                addGroupMembers(group, contacts);
-                            }else{
-                                SuperWeChatApplication.getInstance().getGroupList().add(group);
-                                Intent intent = new Intent("update_group_list").putExtra("group",group);
-                                setResult(RESULT_OK,intent);
-                                progressDialog.dismiss();
-                                Utils.showToast(mContext,R.string.Create_groups_Success,Toast.LENGTH_SHORT);
-                                finish();
-                            }
-                        }else{
-                            progressDialog.dismiss();
-                            Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_SHORT);
-                            Log.e(TAG, Utils.getResourceString(mContext,result.getRetCode()));
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        progressDialog.dismiss();
-                        Utils.showToast(mContext,R.string.Failed_to_create_groups,Toast.LENGTH_SHORT);
-                        Log.e(TAG, error);
-                    }
-                });
+        String path = file.getAbsolutePath();
+        bitmap = BitmapFactory.decodeFile(path);
+        multipartBody = getImageBytes(bitmap);
+        String url = null;
+        try {
+            url = new ApiParams()
+                    .with(I.Group.HX_ID,hxid)
+                    .with(I.Group.NAME,groupName)
+                    .with(I.Group.DESCRIPTION,desc)
+                    .with(I.Group.OWNER,user.getName())
+                    .with(I.Group.IS_PUBLIC,isPublic+"")
+                    .with(I.Group.ALLOW_INVITES,isExam+"")
+                    .getRequestUrl(I.REQUEST_CREATE_GROUP);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Log.e(TAG,"url="+url);
+        executeRequest(new MultipartRequest(url,null,
+                uploadAvatarByMultipartListener(contacts),errorListener(),mimeType, multipartBody));
     }
+
+    private Response.Listener<String> uploadAvatarByMultipartListener(final UserAvatar[] contacts) {
+        return new Response.Listener<String>() {
+            @Override
+            public void onResponse(String resultStr) {
+                Log.e(TAG,"resultStr="+resultStr.toString());
+                Result result = Utils.getResultFromJson(resultStr, GroupAvatar.class);
+                Log.e(TAG,"result="+result);
+                if(result!=null && result.isRetMsg()){
+                    GroupAvatar group = (GroupAvatar) result.getRetData();
+                    Log.e(TAG,"group="+group);
+                    if(contacts!=null) {
+                        addGroupMembers(group, contacts);
+                    }else{
+                        SuperWeChatApplication.getInstance().getGroupList().add(group);
+                        Intent intent = new Intent("update_group_list").putExtra("group",group);
+                        setResult(RESULT_OK,intent);
+                        progressDialog.dismiss();
+                        Utils.showToast(mContext,R.string.Create_groups_Success,Toast.LENGTH_SHORT);
+                        finish();
+                    }
+                }else{
+                    progressDialog.dismiss();
+                    Utils.showToast(mContext,R.string.Failed_to_create_groups,Toast.LENGTH_SHORT);
+//                    Log.e(TAG, Utils.getResourceString(mContext,result.getRetCode()));
+                }
+            }
+        };
+    }
+    public byte[] getImageBytes(Bitmap bmp){
+        if(bmp==null)return null;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG,100,baos);
+        byte[] imageBytes = baos.toByteArray();
+        return imageBytes;
+    }
+//    private void createGroupAppServer(String hxid, String groupName, String desc, final UserAvatar[] contacts) {
+//        //注册环信的服务器 registerEMServer
+//        //先注册本地的服务器并上传头像 REQUEST_CREATE_GROUP -->okhttp
+//        //添加群成员
+//        boolean isPublic = checkBox.isChecked();
+//        boolean isExam = !memberCheckbox.isChecked();
+//        File file = new File(ImageUtils.getAvatarPath(activity, I.AVATAR_TYPE_GROUP_PATH),
+//                avatarName + I.AVATAR_SUFFIX_JPG);
+//        UserBean user = SuperWeChatApplication.getInstance().getUser();
+//        final OkHttpUtils<String> utils = new OkHttpUtils<String>();
+//        utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
+//                .addParam(I.KEY_REQUEST, I.REQUEST_CREATE_GROUP)//添加上传的请求参数
+//                .addParam(I.Group.HX_ID,hxid)
+//                .addParam(I.Group.NAME,groupName)
+//                .addParam(I.Group.DESCRIPTION,desc)
+//                .addParam(I.Group.OWNER,user.getName())
+//                .addParam(I.Group.IS_PUBLIC,isPublic+"")
+//                .addParam(I.Group.ALLOW_INVITES,isExam+"")
+//                .targetClass(String.class)//设置服务端返回json数据的解析类型
+//                .addFile(file)//添加上传的文件
+//                .execute(new OkHttpUtils.OnCompleteListener<String>() {//执行请求，并处理返回结果
+//                    @Override
+//                    public void onSuccess(String resultStr) {
+//                        Result result = Utils.getResultFromJson(resultStr, Result.class);
+//                        if(result!=null && result.isRetMsg()){
+//                            GroupAvatar group = (GroupAvatar) result.getRetData();
+//                            Log.e(TAG,"group="+group);
+//                            if(contacts!=null) {
+//                                addGroupMembers(group, contacts);
+//                            }else{
+//                                SuperWeChatApplication.getInstance().getGroupList().add(group);
+//                                Intent intent = new Intent("update_group_list").putExtra("group",group);
+//                                setResult(RESULT_OK,intent);
+//                                progressDialog.dismiss();
+//                                Utils.showToast(mContext,R.string.Create_groups_Success,Toast.LENGTH_SHORT);
+//                                finish();
+//                            }
+//                        }else{
+//                            progressDialog.dismiss();
+//                            Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_SHORT);
+//                            Log.e(TAG, Utils.getResourceString(mContext,result.getRetCode()));
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError(String error) {
+//                        progressDialog.dismiss();
+//                        Utils.showToast(mContext,R.string.Failed_to_create_groups,Toast.LENGTH_SHORT);
+//                        Log.e(TAG, error);
+//                    }
+//                });
+//    }
 
     private void addGroupMembers(GroupAvatar group,UserAvatar[] members) {
         try {
