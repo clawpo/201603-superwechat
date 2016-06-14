@@ -40,6 +40,7 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.StringRequest;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroup;
 import com.easemob.chat.EMGroupManager;
@@ -57,7 +58,6 @@ import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.MemberUserAvatar;
 import cn.ucai.superwechat.bean.Result;
-import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
 import cn.ucai.superwechat.data.RequestManager;
@@ -227,7 +227,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			}
 			switch (requestCode) {
 			case REQUEST_CODE_ADD_USER:// 添加群成员
-				final UserAvatar[] newmembers = (UserAvatar[]) data.getSerializableExtra("newmembers");
+				final String[] newmembers = (String[]) data.getSerializableExtra("newmembers");
 				progressDialog.setMessage(st1);
 				progressDialog.show();
                 addMembersToServer(newmembers);
@@ -416,9 +416,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                             .with(I.Member.GROUP_ID,mGroup.getMGroupId()+"")
                             .with(I.Member.USER_NAME,currentUserName)
                             .getRequestUrl(I.REQUEST_DELETE_GROUP_MEMBER);
-                    executeRequest(new GsonRequest<Result>(path,Result.class,
-                            responseExitGroupListener(),errorListener()));
-
+                    executeRequest(new StringRequest(path,responseExitGroupListener(),errorListener()));
 				} catch (final Exception e) {
 					runOnUiThread(new Runnable() {
 						public void run() {
@@ -431,11 +429,12 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 		}).start();
 	}
 
-    private Response.Listener<Result> responseExitGroupListener() {
-        return new Response.Listener<Result>() {
+    private Response.Listener<String> responseExitGroupListener() {
+        return new Response.Listener<String>() {
             @Override
-            public void onResponse(Result msg) {
-                if(msg.isRetMsg()){
+            public void onResponse(String s) {
+                Result result = Utils.getResultFromJson(s,GroupAvatar.class);
+                if(result.isRetMsg()){
                     try {
                         EMGroupManager.getInstance().exitFromGroup(groupId);
                         runOnUiThread(new Runnable() {
@@ -447,13 +446,19 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                                     ChatActivity.activityInstance.finish();
                             }
                         });
+                        ArrayList<GroupAvatar> groupList = SuperWeChatApplication.getInstance().getGroupList();
+                        for (int i=0;i<groupList.size();i++){
+                            if(groupList.get(i).getMGroupHxid().equals(groupId)){
+                                groupList.remove(i);
+                                sendStickyBroadcast(new Intent("update_group_list").putExtra("groupId",groupId));
+                            }
+                        }
                     } catch (EaseMobException e) {
                         e.printStackTrace();
                     }
                 }else{
                     progressDialog.dismiss();
-                    Utils.showToast(GroupDetailsActivity.this,
-                            Utils.getResourceString(GroupDetailsActivity.this,msg.getRetCode()),Toast.LENGTH_SHORT);
+                    Utils.showToast(GroupDetailsActivity.this,getResources().getString(R.string.File_does_not_exist),Toast.LENGTH_SHORT);
                 }
             }
         };
@@ -528,15 +533,11 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 		}).start();
 	}
 
-    private void addMembersToServer(final UserAvatar[] contacts){
-        String[] memberNames = null;
-        String userIds="";
+    private void addMembersToServer(final String[] contacts){
         String userNames="";
         if (contacts != null && contacts.length > 0) {
-            memberNames = new String[contacts.length];
             for (int i = 0; i < contacts.length; i++) {
-                memberNames[i] = contacts[i].getMUserName();
-                userNames+=contacts[i].getMUserName()+",";
+                userNames+=contacts[i]+",";
             }
         }
         try {
@@ -545,7 +546,7 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                     .with(I.Member.GROUP_HX_ID,groupId)
                     .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBERS);
             executeRequest(new GsonRequest<Result>(path,Result.class,
-                    responseAddGroupMemberListener(memberNames),errorListener()));
+                    responseAddGroupMemberListener(contacts),errorListener()));
         } catch (Exception e) {
             final String st6 = getResources().getString(R.string.Add_group_members_fail);
             e.printStackTrace();
@@ -860,8 +861,10 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                                     .with(I.Member.GROUP_ID,mGroup.getMGroupId()+"")
                                     .with(I.Member.USER_NAME,user.getMUserName())
                                     .getRequestUrl(I.REQUEST_DELETE_GROUP_MEMBER);
-                            executeRequest(new GsonRequest<Result>(path,Result.class,
-                                    responseDeleteMemberListener(user),errorListener()));
+							Log.e(TAG,"path="+path);
+//                            executeRequest(new GsonRequest<Result>(path,Result.class,
+//                                    responseDeleteMemberListener(user),errorListener()));
+                            executeRequest(new StringRequest(path,responseDeleteMemberListener(user),errorListener()));
                         } catch (Exception e) {
                             progressDialog.dismiss();
                             e.printStackTrace();
@@ -869,12 +872,12 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                         }
                     }
 
-                    private Response.Listener<Result> responseDeleteMemberListener(final MemberUserAvatar user) {
-                        return new Response.Listener<Result>() {
+                    private Response.Listener<String> responseDeleteMemberListener(final MemberUserAvatar user) {
+                        return new Response.Listener<String>() {
                             @Override
-                            public void onResponse(Result result) {
-                                if(result.isRetMsg()){
-                                    MemberUserAvatar user = new Gson().fromJson(result.getRetData().toString(),MemberUserAvatar.class) ;
+                            public void onResponse(String s) {
+                                Result result = Utils.getResultFromJson(s,GroupAvatar.class);
+                                if(result!=null && result.isRetMsg()){
                                     deleteMembersFromGroup(user);
                                 }else{
                                     Toast.makeText(getApplicationContext(), st14, Toast.LENGTH_LONG).show();
@@ -883,6 +886,23 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
                             }
                         };
                     }
+
+
+//                    private Response.Listener<Result> responseDeleteMemberListener(final MemberUserAvatar user) {
+//                        return new Response.Listener<Result>() {
+//                            @Override
+//                            public void onResponse(Result result) {
+//                                Log.e(TAG,"result="+result);
+//                                if(result.isRetMsg()){
+//                                    MemberUserAvatar user = new Gson().fromJson(result.getRetData().toString(),MemberUserAvatar.class) ;
+//                                    deleteMembersFromGroup(user);
+//                                }else{
+//                                    Toast.makeText(getApplicationContext(), st14, Toast.LENGTH_LONG).show();
+//                                    progressDialog.dismiss();
+//                                }
+//                            }
+//                        };
+//                    }
 
                     /**
 					 * 删除群成员
@@ -946,7 +966,9 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
 			return convertView;
 		}
 
-		@Override
+
+
+        @Override
 		public int getCount() {
 			return members!=null?members.size() + 2:2;
 		}
