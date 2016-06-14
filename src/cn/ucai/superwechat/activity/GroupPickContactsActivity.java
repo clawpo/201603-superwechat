@@ -113,13 +113,13 @@ public class GroupPickContactsActivity extends BaseActivity {
 	 * 
 	 * @return
 	 */
-	private UserAvatar[] getToBeAddMembers() {
-		UserAvatar[] members = new UserAvatar[0];
+	private String[] getToBeAddMembers() {
+        String[] members = new String[0];
 		int length = contactAdapter.isCheckedArray.length;
 		for (int i = 0; i < length; i++) {
 			UserAvatar contact = contactAdapter.getItem(i);
 			if (contactAdapter.isCheckedArray[i] && !exitingMembers.contains(contact.getMUserName())) {
-                members = Utils.add(members,contact);
+                members = Utils.add(members,contact.getMUserName());
 			}
 		}
         if(members.length>0){

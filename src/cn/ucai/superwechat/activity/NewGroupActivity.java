@@ -42,7 +42,6 @@ import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.Result;
-import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.bean.UserBean;
 import cn.ucai.superwechat.data.ApiParams;
 import cn.ucai.superwechat.data.GsonRequest;
@@ -163,14 +162,8 @@ public class NewGroupActivity extends BaseActivity {
                 // 调用sdk创建群组方法
                 String groupName = groupNameEditText.getText().toString().trim();
                 String desc = introductionEditText.getText().toString();
-                UserAvatar[] contacts = (UserAvatar[]) data.getSerializableExtra("newmembers");
-                String[] members = null;
-                if (contacts != null && contacts.length > 0) {
-                    members = new String[contacts.length];
-                    for (int i = 0; i < contacts.length; i++) {
-                        members[i] = contacts[i].getMUserName();
-                    }
-                }
+                String[] members = (String[])data.getSerializableExtra("newmembers");;
+                Log.e(TAG,"members="+members.toString());
                 EMGroup emGroup;
                 try {
                     if (checkBox.isChecked()) {
@@ -181,7 +174,7 @@ public class NewGroupActivity extends BaseActivity {
                         //创建不公开群
                         emGroup = EMGroupManager.getInstance().createPrivateGroup(groupName, desc, members, memberCheckbox.isChecked(), 200);
                     }
-                    createGroupAppServer(emGroup.getGroupId(), groupName, desc, contacts);
+                    createGroupAppServer(emGroup.getGroupId(), groupName, desc, members);
                 } catch (final EaseMobException e) {
                     runOnUiThread(new Runnable() {
                         public void run() {
@@ -197,7 +190,7 @@ public class NewGroupActivity extends BaseActivity {
     private final String mimeType = "multipart/form-data;boundary=" + boundary;
     private byte[] multipartBody;
     private Bitmap bitmap;
-    private void createGroupAppServer(String hxid, String groupName, String desc, final UserAvatar[] contacts) {
+    private void createGroupAppServer(String hxid, String groupName, String desc, final String[] contacts) {
         //注册环信的服务器 registerEMServer
         //先注册本地的服务器并上传头像 REQUEST_CREATE_GROUP -->okhttp
         //添加群成员
@@ -227,16 +220,13 @@ public class NewGroupActivity extends BaseActivity {
                 uploadAvatarByMultipartListener(contacts),errorListener(),mimeType, multipartBody));
     }
 
-    private Response.Listener<String> uploadAvatarByMultipartListener(final UserAvatar[] contacts) {
+    private Response.Listener<String> uploadAvatarByMultipartListener(final String[] contacts) {
         return new Response.Listener<String>() {
             @Override
             public void onResponse(String resultStr) {
-                Log.e(TAG,"resultStr="+resultStr.toString());
                 Result result = Utils.getResultFromJson(resultStr, GroupAvatar.class);
-                Log.e(TAG,"result="+result);
                 if(result!=null && result.isRetMsg()){
                     GroupAvatar group = (GroupAvatar) result.getRetData();
-                    Log.e(TAG,"group="+group);
                     if(contacts!=null) {
                         addGroupMembers(group, contacts);
                     }else{
@@ -315,11 +305,11 @@ public class NewGroupActivity extends BaseActivity {
 //                });
 //    }
 
-    private void addGroupMembers(GroupAvatar group,UserAvatar[] members) {
+    private void addGroupMembers(GroupAvatar group,String[] members) {
         try {
             String userNames="";
             for(int i=0;i<members.length;i++){
-                userNames+=members[i].getMUserName()+",";
+                userNames+=members[i]+",";
             }
             String path = new ApiParams()
                     .with(I.Member.GROUP_HX_ID,group.getMGroupHxid())
