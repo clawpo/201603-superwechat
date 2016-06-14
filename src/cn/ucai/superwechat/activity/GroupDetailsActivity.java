@@ -357,10 +357,13 @@ public class GroupDetailsActivity extends BaseActivity implements OnClickListene
     }
 
     private void refreshMembers(){
-        String groupTitle = mGroup.getMGroupName() + "("+mGroup.getMGroupAffiliationsCount() + ")";
-        ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
         ArrayList<MemberUserAvatar> list = SuperWeChatApplication.getInstance().getGroupMembers().get(groupId);
-
+        int memberCount = mGroup.getMGroupAffiliationsCount();
+        if(list.size()!=mGroup.getMGroupAffiliationsCount()){
+            memberCount=list.size();
+        }
+        String groupTitle = mGroup.getMGroupName() + "("+memberCount + ")";
+        ((TextView) findViewById(R.id.group_name)).setText(groupTitle);
         Log.e(TAG,"list="+list);
 	    adapter.clear();
         Log.e(TAG,"list="+list);

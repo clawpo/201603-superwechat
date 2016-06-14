@@ -17,7 +17,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -29,15 +31,18 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
+import com.android.volley.toolbox.StringRequest;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
 import com.easemob.exceptions.EaseMobException;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
+import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.activity.NewFriendsMsgActivity;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.Result;
@@ -48,6 +53,7 @@ import cn.ucai.superwechat.db.InviteMessgeDao;
 import cn.ucai.superwechat.domain.InviteMessage;
 import cn.ucai.superwechat.task.DownloadAllGroupMembersTask;
 import cn.ucai.superwechat.utils.UserUtils;
+import cn.ucai.superwechat.utils.Utils;
 
 public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 
@@ -207,7 +213,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
                                 .with(I.Member.USER_NAME,msg.getFrom())
                                 .with(I.Member.GROUP_HX_ID,msg.getGroupId())
                                 .getRequestUrl(I.REQUEST_ADD_GROUP_MEMBER);
-                        ((NewFriendsMsgActivity) context).executeRequest(new GsonRequest<Result>(path, Result.class,
+                        ((NewFriendsMsgActivity) context).executeRequest(new StringRequest(path,
                                 responseAddGroupMemberListener(button,msg),((NewFriendsMsgActivity) context).errorListener()));
                         EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
                     }
@@ -226,13 +232,23 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
 		}).start();
 	}
 
-    private Response.Listener<Result> responseAddGroupMemberListener(final Button button,final InviteMessage msg) {
-        return new Response.Listener<Result>() {
+    private Response.Listener<String> responseAddGroupMemberListener(final Button button,final InviteMessage msg) {
+        return new Response.Listener<String>() {
             @Override
-            public void onResponse(Result result) {
+            public void onResponse(String s) {
+                Result result = Utils.getResultFromJson(s, GroupAvatar.class);
                 if(result!=null && result.isRetMsg()){
-                    GroupAvatar group = new Gson().fromJson(result.getRetData().toString(),GroupAvatar.class);
+                    GroupAvatar group = (GroupAvatar) result.getRetData();
                     new DownloadAllGroupMembersTask(context,group.getMGroupHxid()).execute();
+                    ArrayList<GroupAvatar> groupList =
+                            SuperWeChatApplication.getInstance().getGroupList();
+                    for (GroupAvatar ga:groupList){
+                        if(ga.getMGroupHxid().equals(msg.getGroupId())){
+                            ga=group;
+                            Log.e("newFriendsMsg","update group"+ga);
+                        }
+                    }
+                    ((NewFriendsMsgActivity) context).sendStickyBroadcast(new Intent("update_group_list"));
                     try {
                         final String str2 = context.getResources().getString(R.string.Has_agreed_to);
                         EMGroupManager.getInstance().acceptApplication(msg.getFrom(), msg.getGroupId());
@@ -249,8 +265,7 @@ public class NewFriendsMsgAdapter extends ArrayAdapter<InviteMessage> {
                                 messgeDao.updateMessage(msg.getId(), values);
                                 button.setBackgroundDrawable(null);
                                 button.setEnabled(false);
-
-                            }
+							}
                         });
                     } catch (final EaseMobException e) {
                         e.printStackTrace();
