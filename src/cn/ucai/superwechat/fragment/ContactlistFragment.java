@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -364,9 +365,10 @@ public class ContactlistFragment extends Fragment {
 		pd.show();
         try {
             String path = new ApiParams()
-                    .with(I.Contact.USER_NAME,tobeDeleteUser.getMUserName())
+                    .with(I.Contact.USER_NAME,SuperWeChatApplication.getInstance().getUserName())
                     .with(I.Contact.CU_NAME,tobeDeleteUser.getMUserName())
                     .getRequestUrl(I.REQUEST_DELETE_CONTACT);
+			Log.e(TAG,"path="+path);
             ((MainActivity)getActivity()).executeRequest(new GsonRequest<Result>(path,
                     Result.class,responseDeleteContactListener(tobeDeleteUser),
                     ((MainActivity)getActivity()).errorListener()));
