@@ -42,7 +42,7 @@ public class GoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public void setMore(boolean more) {
         isMore = more;
     }
-    public GoodAdapter(Context mContext, ArrayList<NewGoodBean> mGoodList, int sortBy) {
+    public GoodAdapter(Context mContext, ArrayList<NewGoodBean> mGoodList) {
         this.mContext = mContext;
         this.mGoodList = mGoodList;
     }
@@ -68,9 +68,6 @@ public class GoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             footerHolder.tvFooter.setText(footerText);
             footerHolder.tvFooter.setVisibility(View.VISIBLE);
         }
-//        if(position == mGoodList.size()){
-//            return;
-//        }
         if(holder instanceof GoodItemViewHolder){
             goodHolder = (GoodItemViewHolder) holder;
             final NewGoodBean good = mGoodList.get(position);
@@ -95,6 +92,19 @@ public class GoodAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }else{
             return I.TYPE_ITEM;
         }
+    }
+
+    public void initItems(ArrayList<NewGoodBean> list) {
+        if(mGoodList!=null && !mGoodList.isEmpty()){
+            mGoodList.clear();
+        }
+        mGoodList.addAll(list);
+        notifyDataSetChanged();
+    }
+
+    public void addItems(ArrayList<NewGoodBean> list) {
+        mGoodList.addAll(list);
+        notifyDataSetChanged();
     }
 
 

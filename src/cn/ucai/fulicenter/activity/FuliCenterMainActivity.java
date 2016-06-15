@@ -1,6 +1,5 @@
 package cn.ucai.fulicenter.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RadioButton;
@@ -8,7 +7,7 @@ import android.widget.TextView;
 
 import cn.ucai.fulicenter.R;
 
-public class FuliCenterMainActivity extends Activity {
+public class FuliCenterMainActivity extends BaseActivity {
 
     TextView mTvCartHint;
     RadioButton mRadioNewGood;
