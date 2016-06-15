@@ -14,7 +14,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.NetworkImageView;
 import com.android.volley.toolbox.Volley;
 
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 
 public class RequestManager {
 	private static RequestQueue mRequestQueue;
@@ -134,7 +134,7 @@ public class RequestManager {
     }
 
     public static Bitmap getBitmapFromRes(int resId) {
-        Resources res = SuperWeChatApplication.applicationContext.getResources();
+        Resources res = FuLiCenterApplication.applicationContext.getResources();
         return BitmapFactory.decodeResource(res, resId);
     }
 }

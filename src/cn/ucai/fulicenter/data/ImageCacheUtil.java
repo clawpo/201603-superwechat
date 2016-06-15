@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.utils.MD5;
 
 /**
@@ -52,13 +52,13 @@ public class ImageCacheUtil implements ImageCache {
         };
         try {
             // 获取图片缓存路径
-            File cacheDir = getDiskCacheDir(SuperWeChatApplication.applicationContext, "thumb");
+            File cacheDir = getDiskCacheDir(FuLiCenterApplication.applicationContext, "thumb");
             if (!cacheDir.exists()) {
                 cacheDir.mkdirs();
             }
             // 创建DiskLruCache实例，初始化缓存数据
             mDiskLruCache = DiskLruCache
-                    .open(cacheDir, getAppVersion(SuperWeChatApplication.applicationContext),
+                    .open(cacheDir, getAppVersion(FuLiCenterApplication.applicationContext),
                             1, DISKMAXSIZE);
         } catch (IOException e) {
             e.printStackTrace();

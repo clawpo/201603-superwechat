@@ -36,12 +36,12 @@
         android:name="cn.ucai.fulicenter.permission.C2D_MESSAGE"
         android:protectionLevel="signature" />
 
-    <uses-permission android:name="cn.ucai.superwechat.permission.C2D_MESSAGE" />
+    <uses-permission android:name="cn.ucai.fulicenter.permission.C2D_MESSAGE" />
 
-    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!--<android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
 
     <application
-        android:name=".SuperWeChatApplication"
+        android:name=".FuLiCenterApplication"
         android:allowBackup="true"
         android:icon="@drawable/logo_uidemo"
         android:label="@string/app_name">

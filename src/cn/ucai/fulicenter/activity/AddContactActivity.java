@@ -35,7 +35,7 @@ import java.util.HashMap;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.bean.Contact;
 import cn.ucai.fulicenter.bean.User;
@@ -99,7 +99,7 @@ public class AddContactActivity extends BaseActivity{
                     return;
                 }
 
-                if(SuperWeChatApplication.getInstance().getUserName().equals(nameText.getText().toString())){
+                if(FuLiCenterApplication.getInstance().getUserName().equals(nameText.getText().toString())){
                     String str = getString(R.string.not_add_myself);
                     startActivity(new Intent(mContext, AlertDialog.class).putExtra("msg", str));
                     return;
@@ -127,7 +127,7 @@ public class AddContactActivity extends BaseActivity{
                 if(user!=null){
                     mtvNothing.setVisibility(View.GONE);
                     HashMap<String, Contact> userList =
-                            SuperWeChatApplication.getInstance().getUserList();
+                            FuLiCenterApplication.getInstance().getUserList();
                     if (userList.containsKey(user.getMUserName())){
                         Intent intent = new Intent();
                         intent.setClass(mContext, UserProfileActivity.class);

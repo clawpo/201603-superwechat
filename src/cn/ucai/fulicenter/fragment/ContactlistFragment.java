@@ -57,7 +57,7 @@ import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.activity.AddContactActivity;
 import cn.ucai.fulicenter.activity.ChatActivity;
 import cn.ucai.fulicenter.activity.MainActivity;
@@ -400,8 +400,8 @@ public class ContactlistFragment extends Fragment {
             @Override
             public void onResponse(Boolean response) {
                 if(response){
-                    ArrayList<Contact> contactList = SuperWeChatApplication.getInstance().getContactList();
-                    HashMap<String, Contact> userList = SuperWeChatApplication.getInstance().getUserList();
+                    ArrayList<Contact> contactList = FuLiCenterApplication.getInstance().getContactList();
+                    HashMap<String, Contact> userList = FuLiCenterApplication.getInstance().getUserList();
                     contactList.remove(tobeDeleteUser);
                     userList.remove(tobeDeleteUser.getMContactCname());
                 }
@@ -498,7 +498,7 @@ public class ContactlistFragment extends Fragment {
 	private void getContactList() {
         mContactList.clear();
 		//获取本地好友列表
-        ArrayList<Contact> contactList = SuperWeChatApplication.getInstance().getContactList();
+        ArrayList<Contact> contactList = FuLiCenterApplication.getInstance().getContactList();
         mContactList.addAll(contactList);
         // 添加"群聊"
         Contact groupUser = new Contact();

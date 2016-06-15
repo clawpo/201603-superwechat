@@ -37,7 +37,7 @@ import cn.ucai.fulicenter.Constant;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.DemoHXSDKModel;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.activity.BlacklistActivity;
 import cn.ucai.fulicenter.activity.DiagnoseActivity;
 import cn.ucai.fulicenter.activity.LoginActivity;
@@ -364,7 +364,7 @@ public class SettingsFragment extends Fragment implements OnClickListener {
 			public void onSuccess() {
 				getActivity().runOnUiThread(new Runnable() {
 					public void run() {
-                        SuperWeChatApplication instance = SuperWeChatApplication.getInstance();
+                        FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
                         instance.getContactList().clear();
                         instance.getUserList().clear();
                         pd.dismiss();

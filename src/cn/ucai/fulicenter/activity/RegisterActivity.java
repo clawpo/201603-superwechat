@@ -31,7 +31,7 @@ import java.io.File;
 
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
-import cn.ucai.fulicenter.SuperWeChatApplication;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.bean.Message;
 import cn.ucai.fulicenter.data.OkHttpUtils;
 import cn.ucai.fulicenter.listener.OnSetAvatarListener;
@@ -172,7 +172,7 @@ public class RegisterActivity extends BaseActivity {
         File file = new File(ImageUtils.getAvatarPath(mContext,I.AVATAR_TYPE_USER_PATH),
                 avatarName + I.AVATAR_SUFFIX_JPG);
         OkHttpUtils<Message> utils = new OkHttpUtils<Message>();
-        utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
+        utils.url(FuLiCenterApplication.SERVER_ROOT)//设置服务端根地址
                 .addParam(I.KEY_REQUEST, I.REQUEST_REGISTER)//添加上传的请求参数
                 .addParam(I.User.USER_NAME, username)//添加用户的账号
                 .addParam(I.User.NICK,nick)//添加用户的昵称
@@ -201,7 +201,7 @@ public class RegisterActivity extends BaseActivity {
 
     private void unRegister() {
         OkHttpUtils<Message> utils = new OkHttpUtils<Message>();
-        utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
+        utils.url(FuLiCenterApplication.SERVER_ROOT)//设置服务端根地址
                 .addParam(I.KEY_REQUEST, I.REQUEST_UNREGISTER)//添加上传的请求参数
                 .addParam(I.User.USER_NAME, username)//添加用户的账号
                 .targetClass(Message.class)//设置服务端返回json数据的解析类型
@@ -231,7 +231,7 @@ public class RegisterActivity extends BaseActivity {
                             if (!RegisterActivity.this.isFinishing())
                                 pd.dismiss();
                             // 保存用户名
-                            SuperWeChatApplication.getInstance().setUserName(username);
+                            FuLiCenterApplication.getInstance().setUserName(username);
                             Toast.makeText(getApplicationContext(), getResources().getString(R.string.Registered_successfully), Toast.LENGTH_SHORT).show();
                             finish();
                         }
