@@ -14,10 +14,7 @@
 package cn.ucai.fulicenter.activity;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -38,7 +35,6 @@ import android.text.ClipboardManager;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -60,18 +56,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.easemob.EMChatRoomChangeListener;
 import com.easemob.EMError;
 import com.easemob.EMEventListener;
 import com.easemob.EMNotifierEvent;
-import com.easemob.EMValueCallBack;
 import com.easemob.chat.EMChatManager;
-import com.easemob.chat.EMChatRoom;
 import com.easemob.chat.EMContactManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMConversation.EMConversationType;
-import com.easemob.chat.EMGroup;
-import com.easemob.chat.EMGroupManager;
 import com.easemob.chat.EMMessage;
 import com.easemob.chat.EMMessage.ChatType;
 import com.easemob.chat.ImageMessageBody;
@@ -101,11 +92,7 @@ import cn.ucai.fulicenter.adapter.ExpressionPagerAdapter;
 import cn.ucai.fulicenter.adapter.MessageAdapter;
 import cn.ucai.fulicenter.adapter.VoicePlayClickListener;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
-import cn.ucai.fulicenter.applib.model.GroupRemoveListener;
-import cn.ucai.fulicenter.bean.Group;
-import cn.ucai.fulicenter.bean.Member;
 import cn.ucai.fulicenter.domain.RobotUser;
-import cn.ucai.fulicenter.task.DownloadAllGroupMembersTask;
 import cn.ucai.fulicenter.utils.CommonUtils;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.SmileUtils;
@@ -187,8 +174,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	private File cameraFile;
 	static int resendPos;
 
-	private GroupListener groupListener;
-
 	private ImageView iv_emoticons_normal;
 	private ImageView iv_emoticons_checked;
 	private RelativeLayout edittext_layout;
@@ -208,11 +193,8 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 			micImage.setImageDrawable(micImages[msg.what]);
 		}
 	};
-	public EMGroup group;
-	public EMChatRoom room;
 	public boolean isRobot;
-    Group mGroup;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -341,20 +323,17 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 		                         @Override
 		                         public void run() {
 		                                 if (listView.getFirstVisiblePosition() == 0 && !isloading && haveMoreData) {
-		                                         List<EMMessage> messages;
+		                                         List<EMMessage> messages = null;
 		                                         try {
 	                                                 if (chatType == CHATTYPE_SINGLE){
                                                          messages = conversation.loadMoreMsgFromDB(adapter.getItem(0).getMsgId(), pagesize);
-	                                                 }
-	                                                 else{
-                                                         messages = conversation.loadMoreGroupMsgFromDB(adapter.getItem(0).getMsgId(), pagesize);
 	                                                 }
 		                                         } catch (Exception e1) {
 	                                                 swipeRefreshLayout.setRefreshing(false);
 	                                                 return;
 		                                         }
 		                                         
-		                                         if (messages.size() > 0) {
+		                                         if (messages!=null && messages.size() > 0) {
 	                                                 adapter.notifyDataSetChanged();
 	                                                 adapter.refreshSeekTo(messages.size() - 1);
 	                                                 if (messages.size() != pagesize){
@@ -403,19 +382,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 				UserUtils.setUserBeanNick(toChatUsername, (TextView) findViewById(R.id.name));
 //				UserUtils.setUserNick(toChatUsername, (TextView) findViewById(R.id.name));
 			}
-		} else {
-			// 群聊
-			findViewById(R.id.container_to_group).setVisibility(View.VISIBLE);
-			findViewById(R.id.container_remove).setVisibility(View.GONE);
-			findViewById(R.id.container_voice_call).setVisibility(View.GONE);
-			findViewById(R.id.container_video_call).setVisibility(View.GONE);
-			toChatUsername = getIntent().getStringExtra("groupId");
-
-			if(chatType == CHATTYPE_GROUP){
-			    onGroupViewCreation();
-			}else{ 
-			    onChatRoomViewCreation();
-			}
 		}
         
 		// for chatroom type, we only init conversation and create view adapter on success
@@ -436,10 +402,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	protected void onConversationInit(){
 	    if(chatType == CHATTYPE_SINGLE){
 	        conversation = EMChatManager.getInstance().getConversationByType(toChatUsername,EMConversationType.Chat);
-	    }else if(chatType == CHATTYPE_GROUP){
-	        conversation = EMChatManager.getInstance().getConversationByType(toChatUsername,EMConversationType.GroupChat);
-	    }else if(chatType == CHATTYPE_CHATROOM){
-	        conversation = EMChatManager.getInstance().getConversationByType(toChatUsername,EMConversationType.ChatRoom);
 	    }
 	     
         // 把此会话的未读数置为0
@@ -456,43 +418,9 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
             }
             if (chatType == CHATTYPE_SINGLE) {
                 conversation.loadMoreMsgFromDB(msgId, pagesize);
-            } else {
-                conversation.loadMoreGroupMsgFromDB(msgId, pagesize);
             }
         }
         
-        EMChatManager.getInstance().addChatRoomChangeListener(new EMChatRoomChangeListener(){
-
-            @Override
-            public void onChatRoomDestroyed(String roomId, String roomName) {
-                if(roomId.equals(toChatUsername)){
-                    finish();
-                }
-            }
-
-            @Override
-            public void onMemberJoined(String roomId, String participant) {                
-            }
-
-            @Override
-            public void onMemberExited(String roomId, String roomName,
-                    String participant) {
-                
-            }
-
-            @Override
-            public void onMemberKicked(String roomId, String roomName,
-                    String participant) {
-                if(roomId.equals(toChatUsername)){
-                    String curUser = EMChatManager.getInstance().getCurrentUser();
-                    if(curUser.equals(participant)){
-                        EMChatManager.getInstance().leaveChatRoom(toChatUsername);
-                        finish();
-                    }
-                }
-            }
-            
-        });
 	}
 	
 	protected void onListViewCreation(){
@@ -518,79 +446,8 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
         });
 	}
 	
-	protected void onGroupViewCreation(){
-        ArrayList<Member> members = SuperWeChatApplication.getInstance().getGroupMembers().get(toChatUsername);
-        if(members==null){
-            new DownloadAllGroupMembersTask(ChatActivity.this,toChatUsername).execute();
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<Group> groupList = SuperWeChatApplication.getInstance().getGroupList();
-                for (Group g:groupList){
-                    if (g.getMGroupHxid().equals(toChatUsername)){
-                        mGroup = g;
-                        Log.e(TAG,"mgroup="+mGroup);
-                    }
-                }
-            }
-        }).start();
 
-        group = EMGroupManager.getInstance().getGroup(toChatUsername);
-        
-        if (group != null){
-            ((TextView) findViewById(R.id.name)).setText(group.getGroupName());
-        }else{
-            ((TextView) findViewById(R.id.name)).setText(toChatUsername);
-        }
-        registerGroupMemberUpdate();
-        // 监听当前会话的群聊解散被T事件
-        groupListener = new GroupListener();
-        EMGroupManager.getInstance().addGroupChangeListener(groupListener);
-	}
 
-    protected void onChatRoomViewCreation(){
-        
-        final ProgressDialog pd = ProgressDialog.show(this, "", "Joining......");
-        EMChatManager.getInstance().joinChatRoom(toChatUsername, new EMValueCallBack<EMChatRoom>() {
-        
-        @Override
-        public void onSuccess(EMChatRoom value) {
-            // TODO Auto-generated method stub
-             runOnUiThread(new Runnable(){
-                   @Override
-                   public void run(){
-                        pd.dismiss();
-                        room = EMChatManager.getInstance().getChatRoom(toChatUsername);
-                        if(room !=null){
-                            ((TextView) findViewById(R.id.name)).setText(room.getName());
-                        }else{
-                            ((TextView) findViewById(R.id.name)).setText(toChatUsername);
-                        }
-                        EMLog.d(TAG, "join room success : " + room.getName());
-                        
-                        onConversationInit();
-                        
-                        onListViewCreation();
-                   }
-               });
-        }
-        
-        @Override
-        public void onError(final int error, String errorMsg) {
-                // TODO Auto-generated method stub
-                EMLog.d(TAG, "join room failure : " + error);
-               runOnUiThread(new Runnable(){
-                   @Override
-                   public void run(){
-                       pd.dismiss();
-                   }
-               });
-               finish();
-            }
-        });
-	}
-	
 	/**
 	 * onActivityResult
 	 */
@@ -1259,26 +1116,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 				.putExtra("cancel", true), REQUEST_CODE_EMPTY_HISTORY);
 	}
 
-	/**
-	 * 点击进入群组详情
-	 * 
-	 * @param view
-	 */
-	public void toGroupDetails(View view) {
-		if (room == null && group == null) {
-			Toast.makeText(getApplicationContext(), R.string.gorup_not_found, Toast.LENGTH_SHORT).show();
-			return;
-		}
-		if(chatType == CHATTYPE_GROUP){
-			startActivityForResult((new Intent(this, GroupDetailsActivity.class)
-					.putExtra("groupId", toChatUsername)
-                    .putExtra("group",mGroup)),
-					REQUEST_CODE_GROUP_DETAIL);
-		}else{
-			startActivityForResult((new Intent(this, ChatRoomDetailsActivity.class).putExtra("roomId", toChatUsername)),
-					REQUEST_CODE_GROUP_DETAIL);
-		}
-	}
 
 	/**
 	 * 显示或隐藏图标按钮页
@@ -1493,19 +1330,11 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	protected void onDestroy() {
 		super.onDestroy();
 		activityInstance = null;
-		if(groupListener != null){
-		    EMGroupManager.getInstance().removeGroupChangeListener(groupListener);
-		}
-        if(mReceiver!=null){
-            unregisterReceiver(mReceiver);
-        }
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		if (group != null)
-			((TextView) findViewById(R.id.name)).setText(group.getGroupName());
 		voiceCallBtn.setEnabled(true);
 		videoCallBtn.setEnabled(true);
 
@@ -1639,42 +1468,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 		public void onScrollStateChanged(AbsListView view, int scrollState) {
 			switch (scrollState) {
 			case OnScrollListener.SCROLL_STATE_IDLE:
-				/*if (view.getFirstVisiblePosition() == 0 && !isloading && haveMoreData && conversation.getAllMessages().size() != 0) {
-					isloading = true;
-					loadmorePB.setVisibility(View.VISIBLE);
-					// sdk初始化加载的聊天记录为20条，到顶时去db里获取更多					
-					List<EMMessage> messages;
-					EMMessage firstMsg = conversation.getAllMessages().get(0);
-					try {
-						// 获取更多messges，调用此方法的时候从db获取的messages
-						// sdk会自动存入到此conversation中
-						if (chatType == CHATTYPE_SINGLE)
-							messages = conversation.loadMoreMsgFromDB(firstMsg.getMsgId(), pagesize);
-						else
-							messages = conversation.loadMoreGroupMsgFromDB(firstMsg.getMsgId(), pagesize);
-					} catch (Exception e1) {
-						loadmorePB.setVisibility(View.GONE);
-						return;
-					}
-					try {
-						Thread.sleep(300);
-					} catch (InterruptedException e) {
-					}
-					if (messages.size() != 0) {
-						// 刷新ui
-						if (messages.size() > 0) {
-							adapter.refreshSeekTo(messages.size() - 1);
-						}
-						
-						if (messages.size() != pagesize)
-							haveMoreData = false;
-					} else {
-						haveMoreData = false;
-					}
-					loadmorePB.setVisibility(View.GONE);
-					isloading = false;
-
-				}*/
 				break;
 			}
 		}
@@ -1734,46 +1527,6 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 		}
 	}
 	
-	/**
-	 * 监测群组解散或者被T事件
-	 * 
-	 */
-	class GroupListener extends GroupRemoveListener {
-
-		@Override
-		public void onUserRemoved(final String groupId, String groupName) {
-			runOnUiThread(new Runnable() {
-				String st13 = getResources().getString(R.string.you_are_group);
-
-				public void run() {
-					if (toChatUsername.equals(groupId)) {
-						Toast.makeText(ChatActivity.this, st13, Toast.LENGTH_LONG).show();
-						if (GroupDetailsActivity.instance != null)
-							GroupDetailsActivity.instance.finish();
-						finish();
-					}
-				}
-			});
-		}
-
-		@Override
-		public void onGroupDestroy(final String groupId, String groupName) {
-			// 群组解散正好在此页面，提示群组被解散，并finish此页面
-			runOnUiThread(new Runnable() {
-				String st14 = getResources().getString(R.string.the_current_group);
-
-				public void run() {
-					if (toChatUsername.equals(groupId)) {
-						Toast.makeText(ChatActivity.this, st14, Toast.LENGTH_LONG).show();
-						if (GroupDetailsActivity.instance != null)
-							GroupDetailsActivity.instance.finish();
-						finish();
-					}
-				}
-			});
-		}
-
-	}
 
 	public String getToChatUsername() {
 		return toChatUsername;
@@ -1782,19 +1535,5 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
 	public ListView getListView() {
 		return listView;
 	}
-
-    class GroupMemberReceiver extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            adapter.notifyDataSetChanged();
-        }
-    }
-    GroupMemberReceiver mReceiver;
-    private void registerGroupMemberUpdate(){
-        mReceiver = new GroupMemberReceiver();
-        IntentFilter inflater = new IntentFilter("update_group_member");
-        registerReceiver(mReceiver,inflater);
-    }
 
 }
