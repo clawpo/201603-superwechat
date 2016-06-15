@@ -27,7 +27,8 @@ import cn.ucai.fulicenter.data.RequestManager;
 
 public class SuperWeChatApplication extends Application {
 
-	public static String SERVER_ROOT = "http://10.0.2.2:8080/SuperWeChatServer/Server";
+//	public static String SERVER_ROOT = "http://10.0.2.2:8080/FuLiCenterServer/Server";
+	public static String SERVER_ROOT = "http://192.168.56.2:8080/FuLiCenterServer/Server";
 
 	public static Context applicationContext;
 	private static SuperWeChatApplication instance;

@@ -1,11 +1,14 @@
 package cn.ucai.fulicenter.activity;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.fragment.NewGoodFragment;
 
 public class FuliCenterMainActivity extends BaseActivity {
 
@@ -15,6 +18,8 @@ public class FuliCenterMainActivity extends BaseActivity {
     RadioButton mRadioCategory;
     RadioButton mRadioCart;
     RadioButton mRadioPersonalCenter;
+    NewGoodFragment mNewGoodFragment;
+    Fragment[] mFragments = new Fragment[1];
     RadioButton[] mRadios = new RadioButton[5];
     private int index;
     // 当前fragment的index
@@ -25,8 +30,20 @@ public class FuliCenterMainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fulicenter_main);
         initView();
+        initFragment();
+        // 添加显示第一个fragment
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_container, mNewGoodFragment)
+//                .add(R.id.fragment_container, contactListFragment).hide(contactListFragment)
+                .show(mNewGoodFragment)
+                .commit();
     }
 
+    private void initFragment() {
+        mNewGoodFragment = new NewGoodFragment();
+        mFragments[0] = mNewGoodFragment;
+    }
     private void initView() {
         mTvCartHint = (TextView) findViewById(R.id.tvCartHint);
         mRadioNewGood = (RadioButton) findViewById(R.id.layout_new_good);
@@ -61,6 +78,12 @@ public class FuliCenterMainActivity extends BaseActivity {
                 break;
         }
         if (currentTabIndex != index) {
+            FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
+            trx.hide(mFragments[currentTabIndex]);
+            if (!mFragments[index].isAdded()) {
+                trx.add(R.id.fragment_container, mFragments[index]);
+            }
+            trx.show(mFragments[index]).commit();
             setRadioChecked(index);
             currentTabIndex = index;
         }
