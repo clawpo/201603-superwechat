@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.fragment.BoutiqueFragment;
+import cn.ucai.fulicenter.fragment.CategoryFragment;
 import cn.ucai.fulicenter.fragment.NewGoodFragment;
 
 public class FuliCenterMainActivity extends BaseActivity {
@@ -21,7 +22,8 @@ public class FuliCenterMainActivity extends BaseActivity {
     RadioButton mRadioPersonalCenter;
     NewGoodFragment mNewGoodFragment;
     BoutiqueFragment mBoutiqueFragment;
-    Fragment[] mFragments = new Fragment[2];
+    CategoryFragment mCategoryFragment;
+    Fragment[] mFragments = new Fragment[3];
     RadioButton[] mRadios = new RadioButton[5];
     private int index;
     // 当前fragment的index
@@ -38,6 +40,7 @@ public class FuliCenterMainActivity extends BaseActivity {
                 .beginTransaction()
                 .add(R.id.fragment_container, mNewGoodFragment)
                 .add(R.id.fragment_container, mBoutiqueFragment).hide(mBoutiqueFragment)
+                .add(R.id.fragment_container, mCategoryFragment).hide(mCategoryFragment)
                 .show(mNewGoodFragment)
                 .commit();
     }
@@ -45,8 +48,10 @@ public class FuliCenterMainActivity extends BaseActivity {
     private void initFragment() {
         mNewGoodFragment = new NewGoodFragment();
         mBoutiqueFragment = new BoutiqueFragment();
+        mCategoryFragment = new CategoryFragment();
         mFragments[0] = mNewGoodFragment;
         mFragments[1] = mBoutiqueFragment;
+        mFragments[2] = mCategoryFragment;
     }
     private void initView() {
         mTvCartHint = (TextView) findViewById(R.id.tvCartHint);
