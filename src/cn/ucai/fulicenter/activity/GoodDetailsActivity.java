@@ -90,6 +90,7 @@ public class GoodDetailsActivity extends BaseActivity {
                     initColorsBanner();
                 }else {
                     Utils.showToast(mContext, "商品详情下载失败", Toast.LENGTH_LONG);
+                    finish();
                 }
             }
         };
