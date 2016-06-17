@@ -114,6 +114,12 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
         String imgUrl=child.getImageUrl();
         String url=I.DOWNLOAD_DOWNLOAD_CATEGORY_CHILD_IMAGE_URL+imgUrl;
         ImageUtils.setThumb(url,holder.ivThumb);
+        holder.layoutItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
         return layout;
     }
 
