@@ -24,6 +24,7 @@ import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.activity.CategoryChildActivity;
 import cn.ucai.fulicenter.bean.CategoryChildBean;
+import cn.ucai.fulicenter.data.RequestManager;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
 
@@ -71,7 +72,7 @@ public class CatChildFilterButton extends Button {
 
     private void initGridView() {
         mgvCategory=new GridView(mContext);
-        mgvCategory.setColumnWidth(Utils.px2dp(mContext, 150));
+        mgvCategory.setColumnWidth(Utils.px2dp(mContext, 1500));
         mgvCategory.setHorizontalSpacing(Utils.px2dp(mContext, 10));
         mgvCategory.setVerticalSpacing(Utils.px2dp(mContext, 10));
         mgvCategory.setNumColumns(GridView.AUTO_FIT);
@@ -82,12 +83,15 @@ public class CatChildFilterButton extends Button {
     
     private void setBtnTopArrow() {
         Drawable right=null;
+        int resId;
         if(mExpandOff){
             right=mContext.getResources().getDrawable(R.drawable.arrow2_down);
+            resId = R.drawable.arrow2_down;
         }else{
             right=mContext.getResources().getDrawable(R.drawable.arrow2_up);
+            resId = R.drawable.arrow2_up;
         }
-        right.setBounds(0, 0, Utils.px2dp(mContext, 44), Utils.px2dp(mContext, 44));
+        right.setBounds(0, 0, ImageUtils.getDrawableWidth(mContext,resId), ImageUtils.getDrawableHeight(mContext,resId));
         mbtnTop.setCompoundDrawables(null, null, right, null);
         mExpandOff=!mExpandOff;
     }
@@ -143,7 +147,9 @@ public class CatChildFilterButton extends Button {
             String imgUrl=child.getImageUrl();
             String url= I.DOWNLOAD_DOWNLOAD_CATEGORY_CHILD_IMAGE_URL+imgUrl;
 
-            ImageUtils.setThumb(url,holder.ivThumb);
+            holder.ivThumb.setDefaultImageResId(R.drawable.nopic);
+            holder.ivThumb.setErrorImageResId(R.drawable.nopic);
+            holder.ivThumb.setImageUrl(url, RequestManager.getImageLoader());
 
             holder.layoutItem.setOnClickListener(new OnClickListener() {
                 @Override
@@ -153,7 +159,7 @@ public class CatChildFilterButton extends Button {
                     }
                     Intent intent=new Intent(mContext, CategoryChildActivity.class);
                     intent.putExtra(I.CategoryChild.CAT_ID, child.getId());
-                    intent.putExtra("children", Children);
+                    intent.putExtra("childList", Children);
                     intent.putExtra(I.CategoryGroup.NAME, mbtnTop.getText().toString());
                     mContext.startActivity(intent);
                     ((CategoryChildActivity)mContext).finish();

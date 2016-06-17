@@ -18,11 +18,13 @@ import java.util.ArrayList;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.adapter.GoodAdapter;
+import cn.ucai.fulicenter.bean.CategoryChildBean;
 import cn.ucai.fulicenter.bean.NewGoodBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
+import cn.ucai.fulicenter.view.CatChildFilterButton;
 import cn.ucai.fulicenter.view.DisplayUtils;
 
 /**
@@ -32,6 +34,7 @@ public class CategoryChildActivity extends BaseActivity {
     public static final String TAG = CategoryChildActivity.class.getName();
 
      CategoryChildActivity mContext;
+    String mGroupName;
      ArrayList<NewGoodBean> mGoodList;
      GoodAdapter mAdapter;
      private  int pageId = 0;
@@ -61,6 +64,8 @@ public class CategoryChildActivity extends BaseActivity {
     /**当前排序*/
     private int sortBy;
 
+    CatChildFilterButton mbtnCatFilter;
+    ArrayList<CategoryChildBean> mChildList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,8 +74,8 @@ public class CategoryChildActivity extends BaseActivity {
         sortBy = I.SORT_BY_ADDTIME_DESC;
         mGoodList = new ArrayList<NewGoodBean>();
         initView();
-        setListener();
         initData();
+        setListener();
     }
 
     private void setListener() {
@@ -79,6 +84,7 @@ public class CategoryChildActivity extends BaseActivity {
         SortStateChangedListener mSortStateChangedListener = new SortStateChangedListener();
         mbtnPriceSort.setOnClickListener(mSortStateChangedListener);
         mbtnAddTimeSort.setOnClickListener(mSortStateChangedListener);
+        mbtnCatFilter.setOnCatFilterClickListener(mGroupName,mChildList);
     }
 
     /**
@@ -140,6 +146,7 @@ public class CategoryChildActivity extends BaseActivity {
 
     private void initData() {
         try {
+            mChildList = (ArrayList<CategoryChildBean>) getIntent().getSerializableExtra("childList");
             getPath(pageId);
             mContext.executeRequest(new GsonRequest<NewGoodBean[]>(path,
                     NewGoodBean[].class,responseDownloadNewGoodListener(),
@@ -205,10 +212,12 @@ public class CategoryChildActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(mGridLayoutManager);
         mAdapter = new GoodAdapter(mContext,mGoodList,sortBy);
         mRecyclerView.setAdapter(mAdapter);
-        String boutiqueChildName = getIntent().getStringExtra(I.Boutique.NAME);
+        mGroupName = getIntent().getStringExtra(I.CategoryGroup.NAME);
         DisplayUtils.initBack(mContext);
         mbtnPriceSort = (Button) findViewById(R.id.btn_price_sort);
         mbtnAddTimeSort = (Button) findViewById(R.id.btn_add_time_sort);
+        mbtnCatFilter = (CatChildFilterButton) findViewById(R.id.btnCatChildFilter);
+        mbtnCatFilter.setText(mGroupName);
     }
 
     class SortStateChangedListener implements View.OnClickListener {
