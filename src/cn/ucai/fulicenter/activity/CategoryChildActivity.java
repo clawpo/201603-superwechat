@@ -1,5 +1,6 @@
 package cn.ucai.fulicenter.activity;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
@@ -7,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.android.volley.Response;
@@ -19,6 +21,7 @@ import cn.ucai.fulicenter.adapter.GoodAdapter;
 import cn.ucai.fulicenter.bean.NewGoodBean;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
+import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
 import cn.ucai.fulicenter.view.DisplayUtils;
 
@@ -41,6 +44,22 @@ public class CategoryChildActivity extends BaseActivity {
     RecyclerView mRecyclerView;
     TextView mtvHint;
     GridLayoutManager mGridLayoutManager;
+    /**按价格排序*/
+    Button mbtnPriceSort;
+    /** 按上架时间排序*/
+    Button mbtnAddTimeSort;
+    /** 商品按价格排序，
+     * true：升序排序
+     * false：降序排序*/
+    boolean mSortByPriceAsc;
+    /**
+     * 商品按上架时间排序
+     * true：升序排序
+     * false：降序排序
+     */
+    boolean mSortByAddTimeAsc;
+    /**当前排序*/
+    private int sortBy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +75,9 @@ public class CategoryChildActivity extends BaseActivity {
     private void setListener() {
         setPullDownRefreshListener();
         setPullUpRefreshListener();
+        SortStateChangedListener mSortStateChangedListener = new SortStateChangedListener();
+        mbtnPriceSort.setOnClickListener(mSortStateChangedListener);
+        mbtnAddTimeSort.setOnClickListener(mSortStateChangedListener);
     }
 
     /**
@@ -184,5 +206,46 @@ public class CategoryChildActivity extends BaseActivity {
         mRecyclerView.setAdapter(mAdapter);
         String boutiqueChildName = getIntent().getStringExtra(I.Boutique.NAME);
         DisplayUtils.initBack(mContext);
+        mbtnPriceSort = (Button) findViewById(R.id.btn_price_sort);
+        mbtnAddTimeSort = (Button) findViewById(R.id.btn_add_time_sort);
+    }
+
+    class SortStateChangedListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            Drawable right=null;
+            int resId;
+            switch (v.getId()) {
+                case R.id.btn_price_sort:
+                    if(mSortByPriceAsc){
+                        sortBy=I.SORT_BY_PRICE_ASC;
+                        right=mContext.getResources().getDrawable(R.drawable.arrow_order_up);
+                        resId = R.drawable.arrow_order_up;
+                    }else{
+                        sortBy=I.SORT_BY_PRICE_DESC;
+                        right=mContext.getResources().getDrawable(R.drawable.arrow_order_down);
+                        resId = R.drawable.arrow_order_down;
+                    }
+                    mSortByPriceAsc=!mSortByPriceAsc;
+                    right.setBounds(0, 0, ImageUtils.getDrawableWidth(mContext,resId), ImageUtils.getDrawableHeight(mContext,resId));
+                    mbtnPriceSort.setCompoundDrawables(null, null, right, null);
+                    break;
+                case R.id.btn_add_time_sort:
+                    if(mSortByAddTimeAsc){
+                        sortBy=I.SORT_BY_ADDTIME_ASC;
+                        right=mContext.getResources().getDrawable(R.drawable.arrow_order_up);
+                        resId = R.drawable.arrow_order_up;
+                    }else{
+                        sortBy=I.SORT_BY_ADDTIME_DESC;
+                        right=mContext.getResources().getDrawable(R.drawable.arrow_order_down);
+                        resId = R.drawable.arrow_order_down;
+                    }
+                    mSortByAddTimeAsc=!mSortByAddTimeAsc;
+                    right.setBounds(0, 0, ImageUtils.getDrawableWidth(mContext,resId), ImageUtils.getDrawableHeight(mContext,resId));
+                    mbtnAddTimeSort.setCompoundDrawables(null, null, right, null);
+                    break;
+            }
+            mAdapter.setSortBy(sortBy);
+        }
     }
 }
