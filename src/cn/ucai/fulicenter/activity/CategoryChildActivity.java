@@ -66,6 +66,7 @@ public class CategoryChildActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_child);
         mContext = this;
+        sortBy = I.SORT_BY_ADDTIME_DESC;
         mGoodList = new ArrayList<NewGoodBean>();
         initView();
         setListener();
@@ -202,7 +203,7 @@ public class CategoryChildActivity extends BaseActivity {
         mRecyclerView = (RecyclerView) findViewById(R.id.rv_category_child);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mGridLayoutManager);
-        mAdapter = new GoodAdapter(mContext,mGoodList,I.SORT_BY_ADDTIME_DESC);
+        mAdapter = new GoodAdapter(mContext,mGoodList,sortBy);
         mRecyclerView.setAdapter(mAdapter);
         String boutiqueChildName = getIntent().getStringExtra(I.Boutique.NAME);
         DisplayUtils.initBack(mContext);
