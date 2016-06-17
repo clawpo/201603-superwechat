@@ -1,6 +1,7 @@
 package cn.ucai.fulicenter.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.activity.CategoryChildActivity;
 import cn.ucai.fulicenter.bean.CategoryChildBean;
 import cn.ucai.fulicenter.bean.CategoryGroupBean;
 import cn.ucai.fulicenter.utils.ImageUtils;
@@ -117,7 +119,8 @@ public class CategoryAdapter extends BaseExpandableListAdapter {
         holder.layoutItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                mContext.startActivity(new Intent(mContext, CategoryChildActivity.class)
+                .putExtra(I.CategoryChild.CAT_ID,child.getId()));
             }
         });
         return layout;
