@@ -128,10 +128,21 @@ public class FuliCenterMainActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         Log.e(TAG,"currentTabIndex="+currentTabIndex+",index="+index);
+        Log.e(TAG,"user="+FuLiCenterApplication.getInstance().getUser());
         if(FuLiCenterApplication.getInstance().getUser()!=null){
-
+            index = 4;
         }else{
             setRadioChecked(index);
+        }
+        if (currentTabIndex != index) {
+            FragmentTransaction trx = getSupportFragmentManager().beginTransaction();
+            trx.hide(mFragments[currentTabIndex]);
+            if (!mFragments[index].isAdded()) {
+                trx.add(R.id.fragment_container, mFragments[index]);
+            }
+            trx.show(mFragments[index]).commit();
+            setRadioChecked(index);
+            currentTabIndex = index;
         }
     }
 }
