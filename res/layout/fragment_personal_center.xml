@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:paddingTop="5dp"
         android:paddingBottom="5dp"
         android:background="@color/personal_center_top_bg">
         <ImageView
@@ -49,8 +50,12 @@
                     android:layout_marginRight="10dp" >
                     <com.android.volley.toolbox.NetworkImageView
                         android:id="@+id/iv_user_avatar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="60dip"
+                        android:layout_height="60dip"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_margin="8dip"
+                        android:scaleType="centerCrop"
                         android:src="@drawable/contactlogo" />
                     <TextView
                         android:id="@+id/tv_user_name"
@@ -77,6 +82,7 @@
                     android:layout_below="@id/center_user_info"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     android:background="#20000000">
                     <LinearLayout
                         android:layout_width="match_parent"
