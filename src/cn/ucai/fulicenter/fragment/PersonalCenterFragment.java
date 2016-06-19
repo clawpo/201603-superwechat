@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +20,10 @@ import com.android.volley.toolbox.NetworkImageView;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.bean.User;
+import cn.ucai.fulicenter.utils.UserUtils;
 
 public class PersonalCenterFragment extends Fragment {
     public static final String TAG = PersonalCenterFragment.class.getName();
@@ -39,12 +43,24 @@ public class PersonalCenterFragment extends Fragment {
     LinearLayout mLayoutCenterCollet;
     RelativeLayout mLyaoutCenterUserInfo;
 
+    int mCollectCount = 0;
+    User mUser;
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mContext = getActivity();
         View layout = View.inflate(mContext, R.layout.fragment_personal_center,null);
         initView(layout);
+        initData();
         return layout;
+    }
+    private void initData() {
+        mUser = FuLiCenterApplication.getInstance().getUser();
+        Log.e(TAG,"initData,mUser="+mUser);
+        mtvCollectCount.setText(""+mCollectCount);
+        if(mUser!=null) {
+            UserUtils.setCurrentUserAvatar(mivUserAvarar);
+            UserUtils.setCurrentUserBeanNick(mtvUserName);
+        }
     }
     
     private void initView(View layout) {
