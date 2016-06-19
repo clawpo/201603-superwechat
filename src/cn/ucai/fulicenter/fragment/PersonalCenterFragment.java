@@ -54,6 +54,7 @@ public class PersonalCenterFragment extends Fragment {
         View layout = View.inflate(mContext, R.layout.fragment_personal_center,null);
         initView(layout);
         initData();
+        registerUpdateUserChangedReceiver();
         registerCollectCountReceiver();
         return layout;
     }
@@ -129,12 +130,29 @@ public class PersonalCenterFragment extends Fragment {
         IntentFilter filter = new IntentFilter("update_collect_count");
         mContext.registerReceiver(mReceiver,filter);
     }
+    class UpdateUserChangerReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.e(TAG,"UpdateUserChangerReceiver,user="+FuLiCenterApplication.getInstance().getUser());
+            initData();
+        }
+    }
+    UpdateUserChangerReceiver mUpdateUserReceiver;
+    private void registerUpdateUserChangedReceiver(){
+        mUpdateUserReceiver = new UpdateUserChangerReceiver();
+        IntentFilter filter = new IntentFilter("update_user");
+        mContext.registerReceiver(mUpdateUserReceiver,filter);
+    }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         if(mReceiver!=null){
             mContext.unregisterReceiver(mReceiver);
+        }
+        if(mUpdateUserReceiver!=null){
+            mContext.unregisterReceiver(mUpdateUserReceiver);
         }
     }
 }
