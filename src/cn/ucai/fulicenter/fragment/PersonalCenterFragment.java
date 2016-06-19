@@ -1,6 +1,9 @@
 package cn.ucai.fulicenter.fragment;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -51,6 +54,7 @@ public class PersonalCenterFragment extends Fragment {
         View layout = View.inflate(mContext, R.layout.fragment_personal_center,null);
         initView(layout);
         initData();
+        registerCollectCountReceiver();
         return layout;
     }
     private void initData() {
@@ -108,5 +112,29 @@ public class PersonalCenterFragment extends Fragment {
 
         // 设置GridView的适配器为新建的simpleAdapter
         mOrderList.setAdapter(simpleAdapter);
+    }
+
+    class CollectCountChangedReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mCollectCount = FuLiCenterApplication.getInstance().getCollectCount();
+            Log.e(TAG,"CollectCountChangedReceiver,mCollectCount="+mCollectCount);
+            initData();
+        }
+    }
+
+    CollectCountChangedReceiver mReceiver;
+    private void registerCollectCountReceiver(){
+        mReceiver = new CollectCountChangedReceiver();
+        IntentFilter filter = new IntentFilter("update_collect_count");
+        mContext.registerReceiver(mReceiver,filter);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(mReceiver!=null){
+            mContext.unregisterReceiver(mReceiver);
+        }
     }
 }
