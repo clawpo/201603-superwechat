@@ -37,6 +37,7 @@ import cn.ucai.fulicenter.data.OkHttpUtils;
 import cn.ucai.fulicenter.listener.OnSetAvatarListener;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
+import cn.ucai.fulicenter.view.DisplayUtils;
 
 /**
  * 注册页
@@ -70,7 +71,7 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private void setListener() {
-		setLoginClickListener();
+//		setLoginClickListener();
         setRegisterClickListener();
         setAvatarClickListener();
     }
@@ -98,14 +99,14 @@ public class RegisterActivity extends BaseActivity {
         return avatarName;
     }
 
-    private void setLoginClickListener() {
-        findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-    }
+//    private void setLoginClickListener() {
+//        findViewById(R.id.btnLogin).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
+//    }
 
     private void initView() {
         userNameEditText = (EditText) findViewById(R.id.etUserName);
@@ -113,6 +114,7 @@ public class RegisterActivity extends BaseActivity {
         passwordEditText = (EditText) findViewById(R.id.etPassword);
         confirmPwdEditText = (EditText) findViewById(R.id.etConfirmPassword);
         mivAvatar = (ImageView) findViewById(R.id.iv_avatar);
+        DisplayUtils.initBackWithTitle(mContext,"用户注册");
     }
 
     /**

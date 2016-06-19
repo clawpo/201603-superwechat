@@ -9,36 +9,35 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_alignParentLeft="true"
-        android:gravity="center"
         android:paddingLeft="10dp"
         android:paddingRight="10dp">
+
         <ImageView
             android:id="@+id/headLeftMenu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_centerVertical="true"
-            android:layout_marginLeft="15dp"
-            android:padding="5dp"
-            android:src="@drawable/back_press" />
-
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true"
+            android:src="@drawable/back_press"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="center_horizontal"
         android:layout_marginRight="40dp"
         android:layout_toRightOf="@id/backClickArea">
 
         <TextView
             android:id="@+id/tv_head_title"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="15dp"
+            android:layout_height="match_parent"
             android:text="账户注册"
             android:textColor="#000"
-            android:textSize="20sp"
-            android:layout_centerInParent="true"/>
+            android:lines="1"
+            android:ellipsize="end"
+            android:textSize="18sp"
+            android:gravity="center_vertical"/>
     </LinearLayout>
 
 </RelativeLayout>
