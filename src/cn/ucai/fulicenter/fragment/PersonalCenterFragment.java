@@ -26,18 +26,13 @@ import java.util.HashMap;
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.bean.User;
+import cn.ucai.fulicenter.task.DownloadCollectCountTask;
 import cn.ucai.fulicenter.utils.UserUtils;
 
 public class PersonalCenterFragment extends Fragment {
     public static final String TAG = PersonalCenterFragment.class.getName();
     Context mContext;
 
-    //资源文件
-    private int[] pic_path={R.drawable.order_list1,
-            R.drawable.order_list2,
-            R.drawable.order_list3,
-            R.drawable.order_list4,
-            R.drawable.order_list5};
     NetworkImageView mivUserAvarar;
     TextView mtvUserName;
     TextView mtvCollectCount;
@@ -135,6 +130,7 @@ public class PersonalCenterFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             Log.e(TAG,"UpdateUserChangerReceiver,user="+FuLiCenterApplication.getInstance().getUser());
+            new DownloadCollectCountTask(mContext).execute();
             initData();
         }
     }
