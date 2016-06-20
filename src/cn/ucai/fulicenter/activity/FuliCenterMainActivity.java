@@ -10,6 +10,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import cn.ucai.fulicenter.FuLiCenterApplication;
+import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.fragment.BoutiqueFragment;
 import cn.ucai.fulicenter.fragment.CategoryFragment;
@@ -111,7 +112,7 @@ public class FuliCenterMainActivity extends BaseActivity {
     }
 
     private void gotoLogin() {
-        startActivity(new Intent(this,LoginActivity.class).putExtra("action","personal"));
+        startActivity(new Intent(this,LoginActivity.class).putExtra("action", I.ACTION_TYPE_PERSONAL));
     }
 
     private void setRadioChecked(int index){
@@ -125,6 +126,14 @@ public class FuliCenterMainActivity extends BaseActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String action = getIntent().getStringExtra("action");
+        Log.e(TAG,"onNewIntent action="+action);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         Log.e(TAG,"currentTabIndex="+currentTabIndex+",index="+index);
@@ -132,11 +141,14 @@ public class FuliCenterMainActivity extends BaseActivity {
         String action = getIntent().getStringExtra("action");
         Log.e(TAG,"action="+action);
         if(action!=null && FuLiCenterApplication.getInstance().getUser()!=null){
-            if(action.equals("personal")) {
+            if(action.equals(I.ACTION_TYPE_PERSONAL)) {
                 index = 4;
             }
         }else{
             setRadioChecked(index);
+        }
+        if(currentTabIndex==4 && FuLiCenterApplication.getInstance().getUser()==null){
+            index = 0;
         }
         if (currentTabIndex != index) {
             FragmentTransaction trx = getSupportFragmentManager().beginTransaction();

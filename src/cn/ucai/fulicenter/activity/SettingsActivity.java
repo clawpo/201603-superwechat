@@ -33,6 +33,7 @@ import com.easemob.chat.EMChatOptions;
 import cn.ucai.fulicenter.DemoHXSDKHelper;
 import cn.ucai.fulicenter.DemoHXSDKModel;
 import cn.ucai.fulicenter.FuLiCenterApplication;
+import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.view.DisplayUtils;
@@ -358,10 +359,13 @@ public class SettingsActivity extends BaseActivity implements OnClickListener {
                         FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
                         instance.getContactList().clear();
                         instance.getUserList().clear();
+                        instance.setUser(null);
+                        instance.setUserName(null);
+                        sendStickyBroadcast(new Intent("update_user"));
                         pd.dismiss();
 						// 重新显示登陆页面
 						finish();
-						startActivity(new Intent(mContext, LoginActivity.class));
+						startActivity(new Intent(mContext, LoginActivity.class).putExtra("action", I.ACTION_TYPE_PERSONAL));
 						
 					}
 				});
