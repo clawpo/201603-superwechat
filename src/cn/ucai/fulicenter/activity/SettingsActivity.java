@@ -359,6 +359,7 @@ public class SettingsActivity extends BaseActivity implements OnClickListener {
                         FuLiCenterApplication instance = FuLiCenterApplication.getInstance();
                         instance.getContactList().clear();
                         instance.getUserList().clear();
+						instance.getCartList().clear();
                         instance.setUser(null);
                         instance.setUserName(null);
                         sendStickyBroadcast(new Intent("update_user"));
