@@ -3,23 +3,33 @@ package cn.ucai.fulicenter.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Response;
 import com.android.volley.toolbox.NetworkImageView;
 
 import java.util.ArrayList;
 
 import cn.ucai.fulicenter.D;
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.activity.CollectActivity;
 import cn.ucai.fulicenter.activity.GoodDetailsActivity;
 import cn.ucai.fulicenter.bean.CollectBean;
+import cn.ucai.fulicenter.bean.MessageBean;
+import cn.ucai.fulicenter.data.ApiParams;
+import cn.ucai.fulicenter.data.GsonRequest;
+import cn.ucai.fulicenter.task.DownloadCollectCountTask;
 import cn.ucai.fulicenter.utils.ImageUtils;
+import cn.ucai.fulicenter.utils.Utils;
 import cn.ucai.fulicenter.view.FooterViewHolder;
 
 import static android.support.v7.widget.RecyclerView.ViewHolder;
@@ -28,7 +38,7 @@ import static android.support.v7.widget.RecyclerView.ViewHolder;
  * Created by clawpo on 16/6/15.
  */
 public class CollectAdapter extends RecyclerView.Adapter<ViewHolder> {
-    Context mContext;
+    CollectActivity mContext;
     ArrayList<CollectBean> mCollectList;
 
     CollectItemViewHolder collectHolder;
@@ -51,7 +61,7 @@ public class CollectAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     public CollectAdapter(Context mContext, ArrayList<CollectBean> mGoodList) {
-        this.mContext = mContext;
+        this.mContext = (CollectActivity)mContext;
         this.mCollectList = mGoodList;
     }
     @Override
@@ -87,6 +97,33 @@ public class CollectAdapter extends RecyclerView.Adapter<ViewHolder> {
                 public void onClick(View v) {
                     mContext.startActivity(new Intent(mContext, GoodDetailsActivity.class)
                             .putExtra(D.NewGood.KEY_GOODS_ID,collect.getGoodsId()));
+                }
+            });
+
+            collectHolder.ivDel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        String path = new ApiParams()
+                                .with(I.Collect.GOODS_ID, collect.getGoodsId()+"")
+                                .with(I.Collect.USER_NAME, FuLiCenterApplication.getInstance().getUserName())
+                                .getRequestUrl(I.REQUEST_DELETE_COLLECT);
+                        Log.e("collectAdapter","path="+path);
+                        mContext.executeRequest(new GsonRequest<MessageBean>(path, MessageBean.class,
+                                new Response.Listener<MessageBean>() {
+                                    @Override
+                                    public void onResponse(MessageBean messageBean) {
+                                        if(messageBean.isSuccess()){
+                                            mCollectList.remove(collect);
+                                            notifyDataSetChanged();
+                                            new DownloadCollectCountTask(mContext).execute();
+                                        }
+                                        Utils.showToast(mContext,messageBean.getMsg(), Toast.LENGTH_SHORT);
+                                    }
+                                }, mContext.errorListener()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         }
