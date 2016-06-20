@@ -32,7 +32,7 @@ public class DownloadCollectCountTask extends BaseActivity {
             User user = FuLiCenterApplication.getInstance().getUser();
             if(user!=null) {
                 path = new ApiParams()
-                        .with(I.User.USER_NAME, user.getMUserName())
+                        .with(I.Collect.USER_NAME, user.getMUserName())
                         .getRequestUrl(I.REQUEST_FIND_COLLECT_COUNT);
             }
         } catch (Exception e) {

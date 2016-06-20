@@ -91,7 +91,7 @@ public class GoodDetailsActivity extends BaseActivity {
                         if(isCollect){
                             path = new ApiParams()
                                     .with(I.Collect.GOODS_ID, mGoodsId+"")
-                                    .with(I.User.USER_NAME, userName)
+                                    .with(I.Collect.USER_NAME, userName)
                                     .getRequestUrl(I.REQUEST_DELETE_COLLECT);
                             actionCollect = I.ACTION_DELETE_COLLECT;
                         }else{
@@ -184,7 +184,7 @@ public class GoodDetailsActivity extends BaseActivity {
             String userName = user.getMUserName();
             try {
                 String path = new ApiParams().with(I.Collect.GOODS_ID, mGoodsId+"")
-                        .with(I.User.USER_NAME, userName)
+                        .with(I.Collect.USER_NAME, userName)
                         .getRequestUrl(I.REQUEST_IS_COLLECT);
                 executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
                         responseIsCollectListener(),errorListener()));
