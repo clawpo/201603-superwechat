@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
+import cn.ucai.fulicenter.bean.CartBean;
 
 /**
  * Created by clawpo on 16/3/28.
@@ -63,5 +65,18 @@ public class Utils {
     public static int dp2px(Context context,int dp){
         int density = (int) context.getResources().getDisplayMetrics().density;
         return dp*density;
+    }
+
+    /**
+     * 统计购物车中商品的件数
+     * @return
+     */
+    public static int sumCartCount(){
+        ArrayList<CartBean> cartList = FuLiCenterApplication.getInstance().getCartList();
+        int count=0;
+        for(CartBean cart:cartList){
+            count += cart.getCount();
+        }
+        return count;
     }
 }
