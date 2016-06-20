@@ -111,7 +111,7 @@ public class FuliCenterMainActivity extends BaseActivity {
     }
 
     private void gotoLogin() {
-        startActivity(new Intent(this,LoginActivity.class));
+        startActivity(new Intent(this,LoginActivity.class).putExtra("action","personal"));
     }
 
     private void setRadioChecked(int index){
@@ -129,8 +129,12 @@ public class FuliCenterMainActivity extends BaseActivity {
         super.onResume();
         Log.e(TAG,"currentTabIndex="+currentTabIndex+",index="+index);
         Log.e(TAG,"user="+FuLiCenterApplication.getInstance().getUser());
-        if(FuLiCenterApplication.getInstance().getUser()!=null){
-            index = 4;
+        String action = getIntent().getStringExtra("action");
+        Log.e(TAG,"action="+action);
+        if(action!=null && FuLiCenterApplication.getInstance().getUser()!=null){
+            if(action.equals("personal")) {
+                index = 4;
+            }
         }else{
             setRadioChecked(index);
         }
