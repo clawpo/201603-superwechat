@@ -1,5 +1,6 @@
 package cn.ucai.fulicenter.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,7 @@ import cn.ucai.fulicenter.bean.MessageBean;
 import cn.ucai.fulicenter.bean.User;
 import cn.ucai.fulicenter.data.ApiParams;
 import cn.ucai.fulicenter.data.GsonRequest;
+import cn.ucai.fulicenter.task.DownloadCollectCountTask;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.Utils;
 import cn.ucai.fulicenter.view.DisplayUtils;
@@ -55,6 +57,10 @@ public class GoodDetailsActivity extends BaseActivity {
 
     /** 当前的颜色值*/
     int mCurrentColor;
+    /**当前商品是否收藏*/
+    boolean isCollect;
+    private int actionCollect;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +68,73 @@ public class GoodDetailsActivity extends BaseActivity {
         mContext = this;
         initView();
         initData();
+        setListener();
+    }
+
+    private void setListener() {
+        setCollectClickListener();
+    }
+    /**
+     * 设置收藏/取消收藏按钮的点击事件监听
+     */
+    private void setCollectClickListener() {
+        mivCollect.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                User user = FuLiCenterApplication.getInstance().getUser();
+                if(user==null){
+                    startActivity(new Intent(GoodDetailsActivity.this,LoginActivity.class));
+                }else {
+                    String userName = user.getMUserName();
+                    try {
+                        String path = "";
+                        if(isCollect){
+                            path = new ApiParams()
+                                    .with(I.Collect.GOODS_ID, mGoodsId+"")
+                                    .with(I.User.USER_NAME, userName)
+                                    .getRequestUrl(I.REQUEST_DELETE_COLLECT);
+                            actionCollect = I.ACTION_DELETE_COLLECT;
+                        }else{
+                            path = new ApiParams()
+                                    .with(I.Collect.GOODS_ID, mGoodsId+"")
+                                    .with(I.Collect.USER_NAME, userName)
+                                    .with(I.Collect.GOODS_NAME, mGoodDetails.getGoodsName())
+                                    .with(I.Collect.GOODS_ENGLISH_NAME, mGoodDetails.getGoodsEnglishName())
+                                    .with(I.Collect.GOODS_THUMB, mGoodDetails.getGoodsThumb())
+                                    .with(I.Collect.GOODS_IMG, mGoodDetails.getGoodsImg())
+                                    .with(I.Collect.ADD_TIME, mGoodDetails.getAddTime()+"")
+                                    .getRequestUrl(I.REQUEST_ADD_COLLECT);
+                            Log.e(TAG,"path="+path);
+                            actionCollect = I.ACTION_ADD_COLLECT;
+                        }
+                        executeRequest(new GsonRequest<MessageBean>(path,MessageBean.class,
+                                responseSetCollectListener(actionCollect),errorListener()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+    }
+
+    private Response.Listener<MessageBean> responseSetCollectListener(final int action) {
+        return new Response.Listener<MessageBean>() {
+            @Override
+            public void onResponse(MessageBean messageBean) {
+                if(messageBean.isSuccess()){
+                    if(action == I.ACTION_ADD_COLLECT){
+                        isCollect = true;
+                        mivCollect.setImageResource(R.drawable.bg_collect_out);
+                    }
+                    if(action == I.ACTION_DELETE_COLLECT){
+                        isCollect = false;
+                        mivCollect.setImageResource(R.drawable.bg_collect_in);
+                    }
+                    new DownloadCollectCountTask(mContext).execute();
+                }
+                Utils.showToast(mContext,messageBean.getMsg(),Toast.LENGTH_SHORT);
+            }
+        };
     }
 
     private void initData() {
@@ -119,6 +192,7 @@ public class GoodDetailsActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }else{
+            isCollect = false;
             mivCollect.setImageResource(R.drawable.bg_collect_in);
         }
     }
@@ -128,8 +202,10 @@ public class GoodDetailsActivity extends BaseActivity {
             @Override
             public void onResponse(MessageBean messageBean) {
                 if(messageBean.isSuccess()){
+                    isCollect = true;
                     mivCollect.setImageResource(R.drawable.bg_collect_out);
                 }else{
+                    isCollect = false;
                     mivCollect.setImageResource(R.drawable.bg_collect_in);
                 }
             }
