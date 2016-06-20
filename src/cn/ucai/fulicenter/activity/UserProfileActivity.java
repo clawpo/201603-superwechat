@@ -44,6 +44,7 @@ import cn.ucai.fulicenter.listener.OnSetAvatarListener;
 import cn.ucai.fulicenter.utils.ImageUtils;
 import cn.ucai.fulicenter.utils.UserUtils;
 import cn.ucai.fulicenter.utils.Utils;
+import cn.ucai.fulicenter.view.DisplayUtils;
 
 public class UserProfileActivity extends BaseActivity implements OnClickListener{
 	
@@ -77,6 +78,7 @@ public class UserProfileActivity extends BaseActivity implements OnClickListener
 		tvNickName = (TextView) findViewById(R.id.user_nickname);
 		rlNickName = (RelativeLayout) findViewById(R.id.rl_nickname);
 		iconRightArrow = (ImageView) findViewById(R.id.ic_right_arrow);
+        DisplayUtils.initBackWithTitle(this,getResources().getString(R.string.title_user_profile));
 	}
 	
 	private void initListener() {
