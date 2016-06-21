@@ -99,13 +99,17 @@ public class FuliCenterMainActivity extends BaseActivity {
                 index = 2;
                 break;
             case R.id.layout_cart:
-                index = 3;
+                if(FuLiCenterApplication.getInstance().getUser()!=null) {
+                    index = 3;
+                }else{
+                    gotoLogin(I.ACTION_TYPE_CART);
+                }
                 break;
             case R.id.layout_personal_center:
                 if(FuLiCenterApplication.getInstance().getUser()!=null) {
                     index = 4;
                 }else{
-                    gotoLogin();
+                    gotoLogin(I.ACTION_TYPE_PERSONAL);
                 }
                 break;
         }
@@ -121,8 +125,8 @@ public class FuliCenterMainActivity extends BaseActivity {
         }
     }
 
-    private void gotoLogin() {
-        startActivity(new Intent(this,LoginActivity.class).putExtra("action", I.ACTION_TYPE_PERSONAL));
+    private void gotoLogin(String action) {
+        startActivity(new Intent(this,LoginActivity.class).putExtra("action", action));
     }
 
     private void setRadioChecked(int index){
@@ -153,6 +157,9 @@ public class FuliCenterMainActivity extends BaseActivity {
         if(action!=null && FuLiCenterApplication.getInstance().getUser()!=null){
             if(action.equals(I.ACTION_TYPE_PERSONAL)) {
                 index = 4;
+            }
+            if(action.equals(I.ACTION_TYPE_CART)){
+                index = 3;
             }
         }else{
             setRadioChecked(index);

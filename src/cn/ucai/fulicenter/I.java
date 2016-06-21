@@ -454,6 +454,7 @@ public interface I {
     String PAY_URL= FuLiCenterApplication.SERVER_ROOT+"?request="+I.REQUEST_PAY;
 
     String ACTION_TYPE_PERSONAL = "personal";
+    String ACTION_TYPE_CART = "cart";
 
     /** 添加收藏*/
     final static int ACTION_ADD_COLLECT=1;
