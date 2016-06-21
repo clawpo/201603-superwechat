@@ -79,7 +79,20 @@ public class GoodDetailsActivity extends BaseActivity {
 
     private void setListener() {
         setCollectClickListener();
+        setAddCartClickListener();
+        registerCartChangedReceiver();
     }
+
+    private void setAddCartClickListener() {
+        mivAddCart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG,"mGoodDetails="+mGoodDetails);
+                Utils.addCart(mContext,mGoodDetails);
+            }
+        });
+    }
+
     /**
      * 设置收藏/取消收藏按钮的点击事件监听
      */
@@ -296,7 +309,7 @@ public class GoodDetailsActivity extends BaseActivity {
     }
     private void registerCartChangedReceiver() {
         mCartChangedReceiver=new CartChangedReceiver();
-        IntentFilter filter=new IntentFilter("update_cart");
+        IntentFilter filter=new IntentFilter("update_cart_list");
         registerReceiver(mCartChangedReceiver, filter);
     }
 
