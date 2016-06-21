@@ -18,6 +18,7 @@ import cn.ucai.fulicenter.R;
 import cn.ucai.fulicenter.bean.CartBean;
 import cn.ucai.fulicenter.bean.GoodDetailsBean;
 import cn.ucai.fulicenter.utils.ImageUtils;
+import cn.ucai.fulicenter.utils.Utils;
 
 import static android.support.v7.widget.RecyclerView.ViewHolder;
 
@@ -63,6 +64,9 @@ public class CartAdapter extends RecyclerView.Adapter<ViewHolder> {
         String path = I.DOWNLOAD_GOODS_THUMB_URL+cart.getGoods().getGoodsThumb();
         ImageUtils.setThumb(path,cartViewHolder.ivGoodsThumb);
         cartViewHolder.chkChecked.setChecked(cart.isChecked());
+        AddDelCartListener listener = new AddDelCartListener(cart);
+        cartViewHolder.ivAddCart.setOnClickListener(listener);
+        cartViewHolder.ivReduceCart.setOnClickListener(listener);
 
     }
 
@@ -104,6 +108,32 @@ public class CartAdapter extends RecyclerView.Adapter<ViewHolder> {
             ivGoodsThumb=(NetworkImageView) itemView.findViewById(R.id.ivGoodsThumb);
             tvGoodsPrice=(TextView) itemView.findViewById(R.id.tvGoodsPrice);
             chkChecked=(CheckBox) itemView.findViewById(R.id.chkSelect);
+        }
+    }
+    /**
+     * 购物车中商品件数增减的事件监听
+     * @author yao
+     *
+     */
+    class AddDelCartListener implements View.OnClickListener {
+        CartBean cart;
+
+        public AddDelCartListener(CartBean cart) {
+            super();
+            this.cart = cart;
+        }
+
+        @Override
+        public void onClick(View v) {
+            cart.setChecked(true);
+            switch (v.getId()) {
+                case R.id.ivAddCart:
+                    Utils.addCart(mContext, cart.getGoods());
+                    break;
+                case R.id.ivReduceCart:
+                    Utils.delCart(mContext, cart.getGoods());
+                    break;
+            }
         }
     }
 }
