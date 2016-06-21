@@ -267,4 +267,12 @@ public class CartFragment extends Fragment {
         IntentFilter filter=new IntentFilter("update_cart_list");
         getActivity().registerReceiver(mCartChangedReceiver, filter);
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(mCartChangedReceiver!=null){
+            getActivity().unregisterReceiver(mCartChangedReceiver);
+        }
+    }
 }
