@@ -51,19 +51,18 @@ public class CartAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-//        if(holder instanceof CartItemViewHolder){
-            cartViewHolder = (CartItemViewHolder) holder;
-            final CartBean cart = mCartList.get(position);
-            GoodDetailsBean goods = cart.getGoods();
-            if(goods==null){
-                return;
-            }
-            cartViewHolder.tvGoodsName.setText(goods.getGoodsName());
-            cartViewHolder.tvCartCount.setText("("+cart.getCount()+")");
-            cartViewHolder.tvGoodsPrice.setText(goods.getCurrencyPrice());
-            String path = I.DOWNLOAD_GOODS_THUMB_URL+cart.getGoods().getGoodsThumb();
-            ImageUtils.setThumb(path,cartViewHolder.ivGoodsThumb);
-//        }
+        cartViewHolder = (CartItemViewHolder) holder;
+        final CartBean cart = mCartList.get(position);
+        GoodDetailsBean goods = cart.getGoods();
+        if(goods==null){
+            return;
+        }
+        cartViewHolder.tvGoodsName.setText(goods.getGoodsName());
+        cartViewHolder.tvCartCount.setText("("+cart.getCount()+")");
+        cartViewHolder.tvGoodsPrice.setText(goods.getCurrencyPrice());
+        String path = I.DOWNLOAD_GOODS_THUMB_URL+cart.getGoods().getGoodsThumb();
+        ImageUtils.setThumb(path,cartViewHolder.ivGoodsThumb);
+        cartViewHolder.chkChecked.setChecked(cart.isChecked());
 
     }
 
