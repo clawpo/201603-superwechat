@@ -47,7 +47,6 @@ import com.easemob.chat.EMMessage;
 import com.easemob.util.EMLog;
 import com.easemob.util.HanziToPinyin;
 import com.easemob.util.NetUtils;
-import com.umeng.analytics.MobclickAgent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -128,7 +127,7 @@ public class MainActivity extends BaseActivity implements EMEventListener {
 
 		// MobclickAgent.setDebugMode( true );
 		// --?--
-		MobclickAgent.updateOnlineConfig(this);
+//		MobclickAgent.updateOnlineConfig(this);
 
 		if (getIntent().getBooleanExtra("conflict", false) && !isConflictDialogShow) {
 			showConflictDialog();

@@ -21,7 +21,6 @@ import android.view.View;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.umeng.analytics.MobclickAgent;
 
 import cn.ucai.fulicenter.applib.controller.HXSDKHelper;
 import cn.ucai.fulicenter.data.RequestManager;
@@ -41,15 +40,11 @@ public class BaseActivity extends FragmentActivity {
         // onresume时，取消notification显示
         HXSDKHelper.getInstance().getNotifier().reset();
         
-        // umeng
-        MobclickAgent.onResume(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // umeng
-        MobclickAgent.onPause(this);
     }
 
 

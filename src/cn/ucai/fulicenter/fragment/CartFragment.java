@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
+import cn.ucai.fulicenter.activity.BuyActivity;
 import cn.ucai.fulicenter.activity.FuliCenterMainActivity;
 import cn.ucai.fulicenter.adapter.CartAdapter;
 import cn.ucai.fulicenter.bean.CartBean;
@@ -62,6 +63,7 @@ public class CartFragment extends Fragment {
         initView(layout);
         setListener();
         initData();
+        setBuyClickListener(layout);
         return layout;
     }
 
@@ -69,6 +71,15 @@ public class CartFragment extends Fragment {
         setPullDownRefreshListener();
         setPullUpRefreshListener();
         registerCartChangedReceiver();
+    }
+    private void setBuyClickListener(View layout) {
+        layout.findViewById(R.id.btnBuy).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(getActivity(), BuyActivity.class);
+                getActivity().startActivity(intent);
+            }
+        });
     }
 
     /**
