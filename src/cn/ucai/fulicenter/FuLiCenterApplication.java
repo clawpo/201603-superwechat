@@ -15,8 +15,11 @@ package cn.ucai.fulicenter;
 
 import android.app.Application;
 import android.content.Context;
+import android.util.Log;
 
 import com.easemob.EMCallBack;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,8 +31,8 @@ import cn.ucai.fulicenter.data.RequestManager;
 
 public class FuLiCenterApplication extends Application {
 
-//	public static String SERVER_ROOT = "http://10.0.2.2:8080/FuLiCenterServer/Server";
-	public static String SERVER_ROOT = "http://192.168.1.49:8080/FuLiCenterServer/Server";
+	public static String SERVER_ROOT = "http://10.0.2.2:8080/FuLiCenterServer/Server";
+//	public static String SERVER_ROOT = "http://192.168.1.49:8080/FuLiCenterServer/Server";
 
 	public static Context applicationContext;
 	private static FuLiCenterApplication instance;
@@ -68,7 +71,13 @@ public class FuLiCenterApplication extends Application {
          */
         hxSDKHelper.onInit(applicationContext);
         RequestManager.init(applicationContext);
+        refWatcher = LeakCanary.install(this);
 	}
+    public static RefWatcher getRefWatcher(Context context) {
+        return instance.refWatcher;
+    }
+
+    private RefWatcher refWatcher;
 
 	public static FuLiCenterApplication getInstance() {
 		return instance;
@@ -118,6 +127,7 @@ public class FuLiCenterApplication extends Application {
 	public void logout(final boolean isGCM,final EMCallBack emCallBack) {
 		// 先调用sdk logout，在清理app中自己的数据
 	    hxSDKHelper.logout(isGCM,emCallBack);
+        Log.e("application","logout....");
 	}
 
 	/**全局的当前登录用户对象*/
@@ -170,4 +180,5 @@ public class FuLiCenterApplication extends Application {
     public void setCartList(ArrayList<CartBean> cartList) {
         this.cartList = cartList;
     }
+
 }

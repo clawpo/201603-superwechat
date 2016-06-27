@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.squareup.leakcanary.RefWatcher;
+
 import cn.ucai.fulicenter.FuLiCenterApplication;
 import cn.ucai.fulicenter.I;
 import cn.ucai.fulicenter.R;
@@ -57,6 +59,8 @@ public class FuliCenterMainActivity extends BaseActivity {
                 .show(mNewGoodFragment)
                 .commit();
         registerCartUpdateListener();
+        RefWatcher refWatcher = FuLiCenterApplication.getRefWatcher(this);
+        refWatcher.watch(this);
     }
 
     private void initFragment() {

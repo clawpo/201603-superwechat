@@ -41,4 +41,5 @@ public class BitmapLruCache extends LruCache<String, Bitmap> implements ImageLoa
         //将图片同时添加到磁盘缓存中
 		RequestManager.putBitmap(url,bitmap);
 	}
+
 }

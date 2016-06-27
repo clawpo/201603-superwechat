@@ -1,5 +1,7 @@
 package cn.ucai.fulicenter.data;
 
+import android.util.Log;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
@@ -46,6 +48,7 @@ public class GsonRequest<T> extends Request<T> {
 	protected Response<T> parseNetworkResponse(NetworkResponse response) {
 		try {
 			String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+			Log.e("gonsrequest","json="+json);
 			return Response.success(mGson.fromJson(json, mClazz),
 					HttpHeaderParser.parseCacheHeaders(response));
 		} catch (UnsupportedEncodingException e) {

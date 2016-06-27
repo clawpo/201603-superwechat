@@ -19,6 +19,7 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -179,5 +180,7 @@ public class PersonalCenterFragment extends Fragment {
         if(mUpdateUserReceiver!=null){
             mContext.unregisterReceiver(mUpdateUserReceiver);
         }
+        RefWatcher refWatcher = FuLiCenterApplication.getRefWatcher(getActivity());
+        refWatcher.watch(this);
     }
 }
