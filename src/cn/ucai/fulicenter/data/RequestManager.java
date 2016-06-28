@@ -24,8 +24,6 @@ public class RequestManager {
      * Image disk cache implementation
      */
     private static DiskLruImageCache mDiskImageCache;
-    // 获取图片缓存类对象
-    private static ImageLoader.ImageCache mImageCache = new ImageCacheUtil();
 
 	private RequestManager() {
 		// no instances
@@ -37,7 +35,7 @@ public class RequestManager {
 		int memClass = ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE))
 				.getMemoryClass();
 		// Use 1/8th of the available memory for this memory cache.
-		int cacheSize = 1024 * 1024 * memClass / 8;
+		int cacheSize = 1024 * 1024 * 4;
 		mImageLoader = new ImageLoader(mRequestQueue, new BitmapLruCache(cacheSize));
         mDiskImageCache= new DiskLruImageCache(context, "pic", cacheSize, Bitmap.CompressFormat.PNG, 100);
 
