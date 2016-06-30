@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMConversation;
 import com.easemob.chat.EMConversation.EMConversationType;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -324,5 +325,7 @@ public class ChatAllHistoryFragment extends Fragment implements View.OnClickList
         if(mContactListChangedReceiver!=null){
             getActivity().unregisterReceiver(mContactListChangedReceiver);
         }
+		RefWatcher refWatcher = SuperWeChatApplication.getRefWatcher(getActivity());
+		refWatcher.watch(this);
 	}
 }

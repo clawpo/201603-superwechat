@@ -19,6 +19,8 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.easemob.EMCallBack;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,7 +73,14 @@ public class SuperWeChatApplication extends Application {
         hxSDKHelper.onInit(applicationContext);
         RequestManager.init(applicationContext);
 		initServerUrl();
+		refWatcher = LeakCanary.install(this);
 	}
+
+	public static RefWatcher getRefWatcher(Context context) {
+			return instance.refWatcher;
+	}
+
+	private RefWatcher refWatcher;
 
 	private void initServerUrl() {
 		SharedPreferences sp = getSharedPreferences("server_url",MODE_PRIVATE);
