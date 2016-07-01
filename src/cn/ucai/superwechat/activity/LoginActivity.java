@@ -21,6 +21,7 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -29,7 +30,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.volley.Response;
 import com.easemob.EMCallBack;
 import com.easemob.chat.EMChatManager;
 import com.easemob.chat.EMGroupManager;
@@ -54,9 +54,7 @@ import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.Result;
 import cn.ucai.superwechat.bean.UserAvatar;
 import cn.ucai.superwechat.bean.UserBean;
-import cn.ucai.superwechat.data.ApiParams;
-import cn.ucai.superwechat.data.GsonRequest;
-import cn.ucai.superwechat.data.OkHttpUtils;
+import cn.ucai.superwechat.data.OkHttpUtils2;
 import cn.ucai.superwechat.db.EMUserDao;
 import cn.ucai.superwechat.db.UserDao;
 import cn.ucai.superwechat.domain.EMUser;
@@ -267,13 +265,44 @@ public class LoginActivity extends BaseActivity {
         }else{
             //volley login server
             try {
-                String path = new ApiParams()
-                        .with(I.User.USER_NAME,currentUsername)
-                        .with(I.User.PASSWORD,currentPassword)
-                        .getRequestUrl(I.REQUEST_LOGIN);
-                Log.e(TAG,"path = "+ path);
-                executeRequest(new GsonRequest<Result>(path, Result.class,
-                        responseListener(), errorListener()));
+                Log.e(TAG,"okhttp login");
+                OkHttpUtils2<Result> utils=new OkHttpUtils2<>();
+                utils.url(SuperWeChatApplication.SERVER_ROOT)
+                        .addParam(I.KEY_REQUEST,I.REQUEST_LOGIN)
+                        .addParam(I.User.USER_NAME,currentUsername)
+                        .addParam(I.User.PASSWORD,currentPassword)
+                        .targetClass(Result.class)
+                        .execute(new OkHttpUtils2.OnCompleteListener<Result>() {
+                            @Override
+                            public void onSuccess(Result result) {
+                                if(result.isRetMsg()){
+                                    Log.e(TAG,"resule.getRetData()="+result.getRetData());
+                                    Gson mGson = new Gson();
+                                    UserAvatar userBean = mGson.fromJson(result.getRetData().toString(),UserAvatar.class);
+                                    UserBean u = new UserBean(userBean.getMUserName(),MD5.getData(currentPassword),userBean.getMUserNick());
+                                    saveUser(u);
+                                    UserDao dao = new UserDao(mContext);
+                                    dao.addUser(u);
+                                    loginSuccess();
+                                }else{
+                                    pd.dismiss();
+                                    Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_LONG);
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                pd.dismiss();
+                                Utils.showToast(mContext,getString(R.string.Login_failed) + error,Toast.LENGTH_LONG);
+                            }
+                        });
+//                String path = new ApiParams()
+//                        .with(I.User.USER_NAME,currentUsername)
+//                        .with(I.User.PASSWORD,currentPassword)
+//                        .getRequestUrl(I.REQUEST_LOGIN);
+//                Log.e(TAG,"path = "+ path);
+//                executeRequest(new GsonRequest<Result>(path, Result.class,
+//                        responseListener(), errorListener()));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -281,27 +310,27 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private Response.Listener<Result> responseListener() {
-        return new Response.Listener<Result>() {
-            @Override
-            public void onResponse(Result result) {
-                Log.e(TAG,"resule="+result);
-				if(result.isRetMsg()){
-                    Log.e(TAG,"resule.getRetData()="+result.getRetData());
-                    Gson mGson = new Gson();
-                    UserAvatar userBean = mGson.fromJson(result.getRetData().toString(),UserAvatar.class);
-                    UserBean u = new UserBean(userBean.getMUserName(),MD5.getData(currentPassword),userBean.getMUserNick());
-					saveUser(u);
-					UserDao dao = new UserDao(mContext);
-					dao.addUser(u);
-					loginSuccess();
-				}else{
-					pd.dismiss();
-					Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_LONG);
-				}
-            }
-        };
-    }
+//    private Response.Listener<Result> responseListener() {
+//        return new Response.Listener<Result>() {
+//            @Override
+//            public void onResponse(Result result) {
+//                Log.e(TAG,"resule="+result);
+//				if(result.isRetMsg()){
+//                    Log.e(TAG,"resule.getRetData()="+result.getRetData());
+//                    Gson mGson = new Gson();
+//                    UserAvatar userBean = mGson.fromJson(result.getRetData().toString(),UserAvatar.class);
+//                    UserBean u = new UserBean(userBean.getMUserName(),MD5.getData(currentPassword),userBean.getMUserNick());
+//					saveUser(u);
+//					UserDao dao = new UserDao(mContext);
+//					dao.addUser(u);
+//					loginSuccess();
+//				}else{
+//					pd.dismiss();
+//					Utils.showToast(mContext,Utils.getResourceString(mContext,result.getRetCode()),Toast.LENGTH_LONG);
+//				}
+//            }
+//        };
+//    }
 
     /**保存当前登录的用户到全局变量*/
     private void saveUser(UserBean user) {
@@ -320,7 +349,7 @@ public class LoginActivity extends BaseActivity {
             EMGroupManager.getInstance().loadAllGroups();
             EMChatManager.getInstance().loadAllConversations();
             //下载用户头像
-            final OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
+            final OkHttpUtils2<Message> utils = new OkHttpUtils2<Message>();
             utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
                     .addParam(I.KEY_REQUEST, I.REQUEST_DOWNLOAD_AVATAR)//添加上传的请求参数
                     .addParam(I.NAME_OR_HXID, currentUsername)//添加用户的账号
@@ -328,7 +357,8 @@ public class LoginActivity extends BaseActivity {
             .doInBackground(new Callback() {
                 @Override
                 public void onFailure(Request request, IOException e) {
-                    Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_SHORT).show();
+                    Log.e(TAG,e.getMessage());
+//                    Toast.makeText(mContext,e.getMessage(),Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
@@ -338,9 +368,26 @@ public class LoginActivity extends BaseActivity {
                     File file = OnSetAvatarListener.getAvatarFile(mContext,avatarPath);
                     FileOutputStream out = null;
                     out = new FileOutputStream(file);
-                    utils.downloadFile(response,file,false);
+                    utils.downloadFile(response,file);
                 }
-            }).execute(null);
+            }).execute(new OkHttpUtils2.OnCompleteListener<Message>() {
+                @Override
+                public void onSuccess(Message msg) {
+                    switch (msg.what) {
+                        case OkHttpUtils2.DOWNLOADING_FINISH:
+//                            Toast.makeText(mContext,"头像下载成功",Toast.LENGTH_SHORT).show();
+                            //从sd卡的file所指向的路径下读取图片，结果是位图类型
+//                            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
+//                            mivAvatar.setImageBitmap(bitmap);
+                            break;
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(mContext,error,Toast.LENGTH_SHORT).show();
+                }
+            });
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

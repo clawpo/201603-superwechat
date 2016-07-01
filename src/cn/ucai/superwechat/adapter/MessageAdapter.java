@@ -588,7 +588,9 @@ public class MessageAdapter extends BaseAdapter{
 				Intent intent = new Intent();
 				intent.setClass(context, UserProfileActivity.class);
 				intent.putExtra("username", message.getFrom());
-                intent.putExtra("hxid",username);
+				if (message.getChatType()==ChatType.GroupChat) {
+					intent.putExtra("hxid", username);
+				}
 				context.startActivity(intent);
 			}
 		});

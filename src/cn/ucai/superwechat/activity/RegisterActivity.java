@@ -33,7 +33,7 @@ import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.SuperWeChatApplication;
 import cn.ucai.superwechat.bean.Result;
-import cn.ucai.superwechat.data.OkHttpUtils;
+import cn.ucai.superwechat.data.OkHttpUtils2;
 import cn.ucai.superwechat.listener.OnSetAvatarListener;
 import cn.ucai.superwechat.utils.ImageUtils;
 import cn.ucai.superwechat.utils.Utils;
@@ -171,7 +171,7 @@ public class RegisterActivity extends BaseActivity {
         //如果环信的服务器注册失败，删除服务器上面的账号和头像 unRegister-->okhttp
         File file = new File(ImageUtils.getAvatarPath(mContext,I.AVATAR_TYPE_USER_PATH),
                 avatarName + I.AVATAR_SUFFIX_JPG);
-        OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
+        OkHttpUtils2<Result> utils = new OkHttpUtils2<Result>();
         utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
                 .addParam(I.KEY_REQUEST, I.REQUEST_REGISTER)//添加上传的请求参数
                 .addParam(I.User.USER_NAME, username)//添加用户的账号
@@ -179,7 +179,7 @@ public class RegisterActivity extends BaseActivity {
                 .addParam(I.User.PASSWORD,pwd)//添加用户的密码
                 .targetClass(Result.class)//设置服务端返回json数据的解析类型
                 .addFile(file)//添加上传的文件
-                .execute(new OkHttpUtils.OnCompleteListener<Result>() {
+                .execute(new OkHttpUtils2.OnCompleteListener<Result>() {
                     @Override
                     public void onSuccess(Result result) {
                         if(result.isRetMsg()){
@@ -200,12 +200,12 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private void unRegister() {
-        OkHttpUtils<Result> utils = new OkHttpUtils<Result>();
+        OkHttpUtils2<Result> utils = new OkHttpUtils2<Result>();
         utils.url(SuperWeChatApplication.SERVER_ROOT)//设置服务端根地址
                 .addParam(I.KEY_REQUEST, I.REQUEST_UNREGISTER)//添加上传的请求参数
                 .addParam(I.User.USER_NAME, username)//添加用户的账号
                 .targetClass(Result.class)//设置服务端返回json数据的解析类型
-                .execute(new OkHttpUtils.OnCompleteListener<Result>() {//执行请求，并处理返回结果
+                .execute(new OkHttpUtils2.OnCompleteListener<Result>() {//执行请求，并处理返回结果
                     @Override
                     public void onSuccess(Result result) {
                         pd.dismiss();

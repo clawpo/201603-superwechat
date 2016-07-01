@@ -162,7 +162,7 @@ public class NewGroupActivity extends BaseActivity {
                 // 调用sdk创建群组方法
                 String groupName = groupNameEditText.getText().toString().trim();
                 String desc = introductionEditText.getText().toString();
-                String[] members = (String[])data.getSerializableExtra("newmembers");;
+                String[] members = (String[])data.getSerializableExtra("newmembers");
                 Log.e(TAG,"members="+members.toString());
                 EMGroup emGroup;
                 try {

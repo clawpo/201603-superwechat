@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cn.ucai.superwechat.SuperWeChatApplication;
+
 /**
  *  * OkHttp框架的二次封装
  * 具有以下功能：
@@ -94,7 +96,7 @@ public class OkHttpUtils2<T> {
 
     /**初始化mHandler*/
     private void initHandler() {
-        mHandler = new Handler() {
+        mHandler = new Handler(SuperWeChatApplication.applicationContext.getMainLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 switch (msg.what) {
@@ -108,7 +110,9 @@ public class OkHttpUtils2<T> {
                     case DOWNLOADING_START:
                     case DOWNLOADING_FINISH:
                     case DOWNLOADING_PERCENT:
-                        mListener.onSuccess((T) msg);//回调下载开始、结束和更新进度的代码
+                        if(mListener!=null) {
+                            mListener.onSuccess((T) msg);//回调下载开始、结束和更新进度的代码
+                        }
                         break;
                 }
             }

@@ -47,7 +47,6 @@ import com.android.volley.Response;
 import com.easemob.chat.EMContactManager;
 import com.easemob.exceptions.EaseMobException;
 import com.easemob.util.EMLog;
-import com.squareup.leakcanary.RefWatcher;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -492,8 +491,8 @@ public class ContactlistFragment extends Fragment {
             getActivity().unregisterReceiver(mReceiver);
         }
 		super.onDestroy();
-		RefWatcher refWatcher = SuperWeChatApplication.getRefWatcher(getActivity());
-		refWatcher.watch(this);
+//		RefWatcher refWatcher = SuperWeChatApplication.getRefWatcher(getActivity());
+//		refWatcher.watch(this);
 	}
 	
 	public void showProgressBar(boolean show) {
