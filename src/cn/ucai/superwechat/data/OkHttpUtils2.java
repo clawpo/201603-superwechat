@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cn.ucai.superwechat.I;
 import cn.ucai.superwechat.SuperWeChatApplication;
 
 /**
@@ -167,12 +168,19 @@ public class OkHttpUtils2<T> {
             @Override
             public void onResponse(Response response) throws IOException {
                 String text = response.body().string();
-                Gson gson = new Gson();
-                T obj = gson.fromJson(text, mClazz);
-                Message msg = Message.obtain();
-                msg.what = RESULT_SUCCESS;
-                msg.obj = obj;
-                mHandler.sendMessage(msg);
+                if(mClazz.equals(String.class)){
+                    Message msg = Message.obtain();
+                    msg.what = RESULT_SUCCESS;
+                    msg.obj = text;
+                    mHandler.sendMessage(msg);
+                }else{
+                    Gson gson = new Gson();
+                    T obj = gson.fromJson(text, mClazz);
+                    Message msg = Message.obtain();
+                    msg.what = RESULT_SUCCESS;
+                    msg.obj = obj;
+                    mHandler.sendMessage(msg);
+                }
             }
         });
     }
@@ -232,6 +240,17 @@ public class OkHttpUtils2<T> {
         }catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+        return this;
+    }
+
+
+    public OkHttpUtils2<T> setRequestUrl(String request) {
+        mUrl = new StringBuilder(SuperWeChatApplication.SERVER_ROOT);
+        mUrl.append("?")
+                .append(I.KEY_REQUEST)
+                .append("=")
+                .append(request);
+        Log.e("okhttp","1 murl="+ mUrl.toString());
         return this;
     }
 

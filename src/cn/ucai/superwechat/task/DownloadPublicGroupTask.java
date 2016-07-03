@@ -4,9 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.android.volley.Response;
-import com.android.volley.toolbox.StringRequest;
-
 import java.util.ArrayList;
 
 import cn.ucai.superwechat.I;
@@ -15,7 +12,7 @@ import cn.ucai.superwechat.activity.BaseActivity;
 import cn.ucai.superwechat.bean.GroupAvatar;
 import cn.ucai.superwechat.bean.Pager;
 import cn.ucai.superwechat.bean.Result;
-import cn.ucai.superwechat.data.ApiParams;
+import cn.ucai.superwechat.data.OkHttpUtils2;
 import cn.ucai.superwechat.utils.Utils;
 
 //import org.codehaus.jackson.map.ObjectMapper;
@@ -33,53 +30,92 @@ public class DownloadPublicGroupTask extends BaseActivity {
         this.username = username;
         this.pageId = pageId;
         this.pageSize = pageSize;
-        initPath();
+//        initPath();
     }
 
-    private void initPath() {
-        try {
-            path = new ApiParams()
-                    .with(I.User.USER_NAME,username)
-                    .with(I.PAGE_ID,pageId+"")
-                    .with(I.PAGE_SIZE,pageSize+"")
-                    .getRequestUrl(I.REQUEST_FIND_PUBLIC_GROUPS);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    private void initPath() {
+//        try {
+//            path = new ApiParams()
+//                    .with(I.User.USER_NAME,username)
+//                    .with(I.PAGE_ID,pageId+"")
+//                    .with(I.PAGE_SIZE,pageSize+"")
+//                    .setRequestUrl(I.REQUEST_FIND_PUBLIC_GROUPS);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void execute(){
-        executeRequest(new StringRequest(path,responseDownloadPublicGroupTask(),errorListener()));
-    }
+//        executeRequest(new StringRequest(path,responseDownloadPublicGroupTask(),errorListener()));
+        OkHttpUtils2<String> utils = new OkHttpUtils2<>();
+        utils.setRequestUrl(I.REQUEST_FIND_PUBLIC_GROUPS)
+                .addParam(I.User.USER_NAME,username)
+                .addParam(I.PAGE_ID,pageId+"")
+                .addParam(I.PAGE_SIZE,pageSize+"")
+                .targetClass(String.class)
+                .execute(new OkHttpUtils2.OnCompleteListener<String>() {
+                    @Override
+                    public void onSuccess(String s) {
+                        try {
+                            Result result = (Result) Utils.getPageResultFromJson(s, GroupAvatar.class);
+                            Log.e(TAG,"result="+result);
+                            if(result!=null && result.isRetMsg()){
+                                Pager pager = (Pager) result.getRetData();
+                                if(pager!=null){
+                                    Log.e(TAG,"pager="+pager);
 
-    private Response.Listener<String> responseDownloadPublicGroupTask() {
-        return new Response.Listener<String>() {
-            @Override
-            public void onResponse(String s) {
-                try {
-                    Result result = (Result) Utils.getPageResultFromJson(s, GroupAvatar.class);
-                        Log.e(TAG,"result="+result);
-                        if(result!=null && result.isRetMsg()){
-                            Pager pager = (Pager) result.getRetData();
-                            if(pager!=null){
-                                Log.e(TAG,"pager="+pager);
-
-                                ArrayList<GroupAvatar> list = (ArrayList<GroupAvatar>) pager.getPageData();
-                                Log.e(TAG,"list="+list.size());
-                                ArrayList<GroupAvatar> publicGroupList =
-                                        SuperWeChatApplication.getInstance().getPublicGroupList();
-                                for (GroupAvatar g : list) {
-                                    if (!publicGroupList.contains(g)) {
-                                        publicGroupList.add(g);
+                                    ArrayList<GroupAvatar> list = (ArrayList<GroupAvatar>) pager.getPageData();
+                                    Log.e(TAG,"list="+list.size());
+                                    ArrayList<GroupAvatar> publicGroupList =
+                                            SuperWeChatApplication.getInstance().getPublicGroupList();
+                                    for (GroupAvatar g : list) {
+                                        if (!publicGroupList.contains(g)) {
+                                            publicGroupList.add(g);
+                                        }
                                     }
+                                    mContext.sendStickyBroadcast(new Intent("update_public_group"));
                                 }
-                                mContext.sendStickyBroadcast(new Intent("update_public_group"));
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e(TAG,"onError,error="+error);
+                    }
+                });
     }
+
+//    private Response.Listener<String> responseDownloadPublicGroupTask() {
+//        return new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(String s) {
+//                try {
+//                    Result result = (Result) Utils.getPageResultFromJson(s, GroupAvatar.class);
+//                        Log.e(TAG,"result="+result);
+//                        if(result!=null && result.isRetMsg()){
+//                            Pager pager = (Pager) result.getRetData();
+//                            if(pager!=null){
+//                                Log.e(TAG,"pager="+pager);
+//
+//                                ArrayList<GroupAvatar> list = (ArrayList<GroupAvatar>) pager.getPageData();
+//                                Log.e(TAG,"list="+list.size());
+//                                ArrayList<GroupAvatar> publicGroupList =
+//                                        SuperWeChatApplication.getInstance().getPublicGroupList();
+//                                for (GroupAvatar g : list) {
+//                                    if (!publicGroupList.contains(g)) {
+//                                        publicGroupList.add(g);
+//                                    }
+//                                }
+//                                mContext.sendStickyBroadcast(new Intent("update_public_group"));
+//                            }
+//                        }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        };
+//    }
 }

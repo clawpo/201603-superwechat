@@ -171,7 +171,7 @@ public class LoginActivity extends BaseActivity {
 
     private void setProgressShow() {
         progressShow = true;
-        pd = new ProgressDialog(LoginActivity.this);
+        pd = new ProgressDialog(mContext);
         pd.setCanceledOnTouchOutside(false);
         pd.setOnCancelListener(new OnCancelListener() {
 
@@ -299,7 +299,7 @@ public class LoginActivity extends BaseActivity {
 //                String path = new ApiParams()
 //                        .with(I.User.USER_NAME,currentUsername)
 //                        .with(I.User.PASSWORD,currentPassword)
-//                        .getRequestUrl(I.REQUEST_LOGIN);
+//                        .setRequestUrl(I.REQUEST_LOGIN);
 //                Log.e(TAG,"path = "+ path);
 //                executeRequest(new GsonRequest<Result>(path, Result.class,
 //                        responseListener(), errorListener()));
@@ -354,6 +354,7 @@ public class LoginActivity extends BaseActivity {
                     .addParam(I.KEY_REQUEST, I.REQUEST_DOWNLOAD_AVATAR)//添加上传的请求参数
                     .addParam(I.NAME_OR_HXID, currentUsername)//添加用户的账号
                     .addParam(I.AVATAR_TYPE, I.AVATAR_TYPE_USER_PATH)//添加用户的头像类型
+                    .targetClass(Message.class)
             .doInBackground(new Callback() {
                 @Override
                 public void onFailure(Request request, IOException e) {
