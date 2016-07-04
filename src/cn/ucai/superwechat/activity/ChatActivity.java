@@ -1499,6 +1499,9 @@ public class ChatActivity extends BaseActivity implements OnClickListener, EMEve
         if(mReceiver!=null){
             unregisterReceiver(mReceiver);
         }
+		adapter = null;
+        micImages = null;
+        voiceRecorder = null;
 	}
 
 	@Override

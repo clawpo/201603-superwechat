@@ -1,6 +1,6 @@
 package cn.ucai.superwechat.activity;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -32,7 +32,7 @@ public class SplashActivity extends BaseActivity {
     private static final String TAG = SplashActivity.class.getName();
 	private RelativeLayout rootLayout;
 	private TextView versionText;
-    Context mContext;
+    Activity mContext;
 	
 	private static final int sleepTime = 2000;
 
