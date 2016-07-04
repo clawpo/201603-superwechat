@@ -1,179 +1,316 @@
 package cn.ucai.superwechat.utils;
 
-import java.io.File;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.util.EntityUtils;
-
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.util.LruCache;
+import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import cn.ucai.superwechat.I;
+import cn.ucai.superwechat.R;
 
 /**
- * 异步加载图片的框架
- * 1、从网络下载图片
- * 2、缓存图片至内存
- * 3、缓存图片至本地
- * 4、回调程序员写的显示图片的代码
- * @author yao
- *
+ * Created by yao on 2016/5/18.
  */
 public class ImageLoader {
-	public static ImageLoader mInstance;
-	/**Activity实例*/
-	Context mContext;
-	/** 缓存图片至内存的集合*/
-	LruCache<String, Bitmap> mCaches;
-	
-	/**定义图片下载事件完成的如何显示的接口
-	 * 预存程序员编写的显示图片的代码.
-	 * @author yao
-	 *
-	 */
-	public interface OnImageLoadListener{
-		/**
-		 * 图片下载成功事件的处理
-		 * @param path：图片的地址，用于防止错位显示
-		 * @param bitmap:下载图片的位图格式
-		 */
-		void onSuccess(String path, Bitmap bitmap);
-		
-		/**
-		 * 图片下载失败事件的处理
-		 * @param errorMsg：错误信息
-		 */
-		void error(String errorMsg);
+	private static final String UTF_8 = "utf-8";
+	private static final int DOWNLOAD_SUCCESS=0;
+	private static final int DOWNLOAD_ERROR=1;
+
+	private static OkHttpClient mOkHttpClient;
+	/** mHandler不能单例，否则一个mHandler不能准确地处理多个mBean*/
+	private Handler mHandler;
+	private static LruCache<String,Bitmap> mCaches;
+	ImageBean mBean;
+
+	/** RecyclerView、listView、GridView等容器*/
+	ViewGroup mParentLayout;
+	private static String mTag;
+	/** *缺省图片*/
+	private int mDefaultPicId;
+	public interface OnImageLoadListener {
+		void onSuccess(String url, Bitmap bitmap);
+
+		void onError(String error);
 	}
-	
+
+	private class ImageBean {
+		String url;
+		int width;
+		int height;
+		Bitmap bitmap;
+		OnImageLoadListener listener;
+		String saveFileName;
+		String error;
+		ImageView imageView;
+	}
+
 	/**
-	 * 私有的构造器
-	 * @param context
+	 * 创建ImageLoader对象
+	 * @return
 	 */
-	private ImageLoader(Context  context){
-		mContext=context;
-		//获取app的内存容量，单位：字节
-		int maxSize=(int) Runtime.getRuntime().maxMemory();
-		//创建缓存集合
-		mCaches=new LruCache<String, Bitmap>(maxSize/4){
+	public static ImageLoader build() {
+		return new ImageLoader();
+	}
+
+	private ImageLoader() {
+		mBean=new ImageBean();
+		initHandler();
+		if (mOkHttpClient == null) {
+			mOkHttpClient=new OkHttpClient();
+		}
+		if (mCaches == null) {
+			initCaches();
+		}
+	}
+
+	private void initCaches() {
+		long maxMemory = Runtime.getRuntime().maxMemory();
+		mCaches = new LruCache<String, Bitmap>((int) maxMemory/4){
 			@Override
 			protected int sizeOf(String key, Bitmap value) {
 				return value.getRowBytes()*value.getHeight();
 			}
 		};
+
 	}
-	
-	/**
-	 *  单例模式
-	 * @param context
-	 * @return
-	 */
-	public static ImageLoader getInstance(Context context){
-		if(mInstance==null){
-			mInstance=new ImageLoader(context);
-		}
-		return mInstance;
+
+	private void initHandler() {
+		mHandler = new Handler(){
+			@Override
+			public void handleMessage(Message msg) {
+				ImageBean bean= (ImageBean) msg.obj;
+				switch (msg.what) {
+					case DOWNLOAD_ERROR:
+						bean.listener.onError(bean.error);
+						break;
+					case DOWNLOAD_SUCCESS:
+						bean.listener.onSuccess(mBean.url,mBean.bitmap);
+						break;
+				}
+			}
+		};
 	}
 
 	/**
-	 * 定义一个封装了图片信息的实体类
-	 */
-	class ImageBean{
-		/** 图片的下载地址*/
-		String path;
-		String imgName;
-		int width,height;
-		/** 保存程序员编写的处理图片的代码*/
-		OnImageLoadListener listener;
-		/** 下载的图片*/
-		Bitmap bitmap;
-		/** 下载失败的信息*/
-		String msg;
-		/**
-		 * 
-		 * @param path：图片的下载地址
-		 * @param width：宽度
-		 * @param height:高度
-		 * @param listener：程序员写的处理图片的代码
-		 */
-		public ImageBean(String path, String imgName,int width, int height,
-				OnImageLoadListener listener) {
-			super();
-			this.path = path;
-			this.imgName=imgName;
-			this.width = width;
-			this.height = height;
-			this.listener = listener;
-		}
-		
-	}
-	/**
-	 * 在工作线程中下载图片，下载完成后显示图片
-	 * @author yao
-	 *
-	 */
-	class DownloadImageTask extends AsyncTask<ImageBean, Void, ImageBean>{
-		@Override
-		protected ImageBean doInBackground(ImageBean... params) {
-			ImageBean bean=params[0];
-			try {
-				//下载图片，返回实体：entity
-				HttpEntity entity = HttpUtils.getEntity(bean.path, null, HttpUtils.METHOD_GET);
-				//获取图片字节数组
-				byte[] data = EntityUtils.toByteArray(entity);
-				//将字节数组转换为Bitmap
-				bean.bitmap = BitmapUtils.getBitmap(data, bean.width, bean.height);
-				//缓存至内存
-				mCaches.put(bean.path, bean.bitmap);
-				//缓存至sd卡
-				BitmapUtils.saveBitmap(bean.bitmap, FileUtils.getDir(mContext,bean.imgName));
-				bean.msg="图片下载成功";
-			} catch (Exception e) {
-				bean.msg="图片下载失败";
-			}finally{
-				HttpUtils.closeClient();
-			}
-			return bean;
-		}
-		
-		@Override
-		protected void onPostExecute(ImageBean result) {
-			if(result==null){
-				return ;
-			}
-			//显示图片，回调程序员写的处理图片下载结果的代码
-			if(!result.msg.equals("图片下载失败")){
-				result.listener.onSuccess(result.path, result.bitmap);
-			}else{
-				result.listener.error("图片下载失败");
-			}
-		}
-	}
-	
-	/**
-	 * 下载并显示图片
-	 * @param path：图片的地址
-	 * @param width：图片的宽度
-	 * @param height：图片的高度
-	 * @param listener:程序员写的处理图片的代码
+	 * 获取服务端根地址并返回ImageLoader对象
+	 * @param url
 	 * @return
 	 */
-	public Bitmap displayImage(String path,String imgName,int width,int height,OnImageLoadListener listener){
-		//若图片缓存在内存，则直接返回该图片
-		if(mCaches.get(path)!=null){
-			return mCaches.get(path);
+	public ImageLoader url(String url) {
+		mBean.url=url;
+		return this;
+	}
+
+	/**
+	 * 设置图片的预期宽度并返回ImageLoader对象
+	 * @param width
+	 * @return
+	 */
+	public ImageLoader width(int width) {
+		mBean.width=width;
+		return this;
+	}
+
+	/**
+	 * 设置图片的预期高度并返回ImageLoader对象
+	 * @param height
+	 * @return
+	 */
+	public ImageLoader height(int height) {
+		mBean.height=height;
+		return this;
+	}
+
+	/**
+	 * 设置图片保存至sd卡的文件名
+	 * @param saveFileName
+	 * @return
+	 */
+	public ImageLoader saveFileName(String saveFileName) {
+		mBean.saveFileName=saveFileName;
+		return this;
+	}
+
+	public ImageLoader listener(OnImageLoadListener listener) {
+		mBean.listener=listener;
+		return this;
+	}
+
+	public ImageLoader addParam(String key, String value) {
+		try {
+			if (mBean.url.indexOf("?") == -1) {
+				mBean.url += "?" + key + "=" + URLEncoder.encode(value, UTF_8);
+			} else {
+				mBean.url += "&" + key + "=" + URLEncoder.encode(value, UTF_8);
+			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		}
-		//若图片缓存在sd卡，则直接返回该图片
-		Bitmap bitmap = BitmapUtils.getBitmap(FileUtils.getDir(mContext,imgName));
-		if(bitmap!=null){
+		return this;
+	}
+
+	public Bitmap loadImage(final Context context) {
+		if (mBean.url == null) {
+			Message msg = Message.obtain();
+			msg.what=DOWNLOAD_ERROR;
+			mBean.error = "url没有设置";
+			msg.obj=mBean;
+			mHandler.sendMessage(msg);
+			return null;
+		}
+		if (mCaches.get(mBean.url) != null) {
+			return mCaches.get(mBean.url);
+		}
+		String dir = FileUtils.getDir(context, mBean.saveFileName);
+        Log.e("main","dir="+dir);
+		final Bitmap bitmap = BitmapUtils.getBitmap(dir);
+        Log.e("main","bitmap="+bitmap);
+		if (bitmap != null) {
 			return bitmap;
 		}
-		//创建一个ImageBean对象,    预存代码
-		ImageBean bean=new ImageBean(path, imgName,width, height, listener);
-		//创建DownloadImageTask对象并执行下载
-		new DownloadImageTask().execute(bean);
+		//用图片的下载地址（不包含每个图片的文件名)设置用于取消请求的tag
+		int i = mBean.url.lastIndexOf('/');
+        Log.e("main","url="+mBean.url);
+		mTag=mBean.url;
+		Request request = new Request.Builder().url(mBean.url).tag(mTag).build();
+		Call call = mOkHttpClient.newCall(request);
+		call.enqueue(new Callback() {
+			@Override
+			public void onFailure(Request request, IOException e) {
+				Message msg = Message.obtain();
+				msg.what=DOWNLOAD_ERROR;
+				mBean.error = e.getMessage();
+				msg.obj=mBean;
+				mHandler.sendMessage(msg);
+			}
+
+			@Override
+			public void onResponse(Response response) throws IOException {
+				Bitmap bitmap = BitmapUtils.getBitmap(response.body().bytes(), mBean.width, mBean.height);
+                Log.e("main","bitmap="+bitmap);
+				if (bitmap != null) {
+					mBean.bitmap = bitmap;
+					mCaches.put(mBean.url, mBean.bitmap);
+					if (mBean.saveFileName != null) {
+						BitmapUtils.saveBitmap(mBean.bitmap, FileUtils.getDir(context, mBean.saveFileName));
+					}
+
+					Message msg = Message.obtain();
+					msg.what=DOWNLOAD_SUCCESS;
+					msg.obj=mBean;
+					mHandler.sendMessage(msg);
+				}else {// 发送下载失败的消息
+					Message message = Message.obtain();
+					message.what = DOWNLOAD_ERROR;
+					mBean.error="图片下载失败";
+					message.obj = mBean;
+					mHandler.sendMessage(message);
+				}
+			}
+		});
 		return null;
 	}
-	
+
+	/**
+	 * 则设置图片下载后主线程默认的图片显示代码->mOnImageLoadListener
+	 * @param parent:View，例如:RecyclerView、ListView等
+	 * @return
+	 */
+	public ImageLoader listener(final ViewGroup parent) {
+		if (parent != null) {
+			mBean.listener = new ImageLoader.OnImageLoadListener() {//设置下载完成后处理的代码
+				@Override
+				public void onSuccess(String url, Bitmap bitmap) {
+					//从RecyclerView中搜索tag值是url的ImageView
+					ImageView iv = (ImageView) parent.findViewWithTag(url);
+					if (iv != null) {
+						iv.setImageBitmap(bitmap);
+					}
+				}
+
+				@Override
+				public void onError(String error) {
+					Log.i("main", error);
+				}
+
+			};
+			mParentLayout = parent;
+		}
+		return this;
+	}
+
+	/**
+	 *  设置显示图片的ImageView
+	 * @param imageView
+	 * @return
+	 */
+	public ImageLoader imageView(ImageView imageView) {
+		imageView.setTag(mBean.url);
+		mBean.imageView=imageView;
+		return this;
+	}
+
+	/**
+	 * 设置缺省显示的图片
+	 * @param defaultPicId
+	 * @return
+	 */
+	public ImageLoader defaultPicture(int defaultPicId) {
+		mDefaultPicId=defaultPicId;
+		return this;
+	}
+
+	/**
+	 * 封装了图片下载和显示的缺省代码。
+	 * 若要编写更为灵活的显示图片的代码，可调用loadImage方法
+	 * @param context
+	 */
+	public void showImage(Context context) {
+		Bitmap bitmap = loadImage(context);//从内存或sd卡加载图片
+		if (bitmap == null) {
+			Log.i("main", "null");
+			mBean.imageView.setImageResource(mDefaultPicId);
+		} else {
+			mBean.imageView.setImageBitmap(bitmap);
+		}
+	}
+
+	public void showUserAvatar(Context context,String userName,ImageView imageView){
+        mBean.url = I.DOWNLOAD_USER_AVATAR_URL+userName;
+        mBean.width = 80;
+        mBean.height = 80;
+        mBean.imageView = imageView;
+        mBean.saveFileName = I.AVATAR_TYPE_USER_PATH + I.BACKSLASH + userName;
+        Bitmap bitmap = loadImage(context);//从内存或sd卡加载图片
+        if (bitmap == null) {
+            Log.i("main", "null");
+            mBean.imageView.setImageResource(R.drawable.default_face);
+        } else {
+            mBean.imageView.setImageBitmap(bitmap);
+        }
+    }
+	/**
+	 * 释放ImageLoader类的静态对象
+	 */
+	public static void release() {
+		if (mOkHttpClient != null) {
+			mOkHttpClient.cancel(mTag);
+			mOkHttpClient=null;
+			mCaches=null;
+		}
+	}
 }

@@ -23,7 +23,7 @@
         android:background="@drawable/mm_listitem"
         android:duplicateParentState="true" >
 
-        <com.android.volley.toolbox.NetworkImageView
+        <ImageView
             android:id="@+id/avatar"
             android:layout_width="43dp"
             android:layout_height="43dp"

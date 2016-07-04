@@ -103,10 +103,15 @@ public class OkHttpUtils2<T> {
                 switch (msg.what) {
                     case RESULT_SUCCESS:
                         T obj = (T) msg.obj;//获得解析的结果
-                        mListener.onSuccess(obj);//回调解析成功的代码
+                        if(mListener!=null) {
+                            mListener.onSuccess(obj);//回调解析成功的代码
+                        }
                         break;
                     case RESULT_ERROR://
-                        mListener.onError(msg.obj.toString());//回调解析失败的代码
+                        if(mListener!=null) {
+                            Log.e("main","obj="+msg);
+                            mListener.onError(msg.obj.toString());//回调解析失败的代码
+                        }
                         break;
                     case DOWNLOADING_START:
                     case DOWNLOADING_FINISH:

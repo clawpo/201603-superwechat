@@ -22,10 +22,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Filter;
+import android.widget.ImageView;
 import android.widget.SectionIndexer;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 import com.easemob.util.EMLog;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import cn.ucai.superwechat.DemoHXSDKHelper;
 import cn.ucai.superwechat.R;
 import cn.ucai.superwechat.applib.controller.HXSDKHelper;
 import cn.ucai.superwechat.bean.UserAvatar;
-import cn.ucai.superwechat.data.RequestManager;
+import cn.ucai.superwechat.utils.ImageLoader;
 import cn.ucai.superwechat.utils.UserUtils;
 
 /**
@@ -70,7 +70,7 @@ public class ContactAdapter extends BaseAdapter implements SectionIndexer{
     }
 
     private static class ViewHolder {
-		NetworkImageView avatar;
+		ImageView avatar;
 	    TextView unreadMsgView;
 	    TextView nameTextview;
 	    TextView tvHeader;
@@ -81,7 +81,7 @@ public class ContactAdapter extends BaseAdapter implements SectionIndexer{
  		if(convertView == null){
  		    holder = new ViewHolder();
 			convertView = layoutInflater.inflate(res, null);
-			holder.avatar = (NetworkImageView) convertView.findViewById(R.id.avatar);
+			holder.avatar = (ImageView) convertView.findViewById(R.id.avatar);
 			holder.unreadMsgView = (TextView) convertView.findViewById(R.id.unread_msg_number);
 			holder.nameTextview = (TextView) convertView.findViewById(R.id.name);
 			holder.tvHeader = (TextView) convertView.findViewById(R.id.header);
@@ -109,8 +109,8 @@ public class ContactAdapter extends BaseAdapter implements SectionIndexer{
 		//显示申请与通知item
 		if(username.equals(Constant.NEW_FRIENDS_USERNAME)){
 		    holder.nameTextview.setText(user.getMUserNick());
-		    holder.avatar.setDefaultImageResId(R.drawable.new_friends_icon);
-			holder.avatar.setImageUrl("", RequestManager.getImageLoader());
+		    holder.avatar.setImageResource(R.drawable.new_friends_icon);
+//			holder.avatar.setImageUrl("", RequestManager.getImageLoader());
             int unreadMsgCount = ((DemoHXSDKHelper) HXSDKHelper.getInstance())
                     .getContactList().get(Constant.NEW_FRIENDS_USERNAME).getUnreadMsgCount();
             if(unreadMsgCount>0){
@@ -122,8 +122,8 @@ public class ContactAdapter extends BaseAdapter implements SectionIndexer{
 		}else if(username.equals(Constant.GROUP_USERNAME)){
 			//群聊item
 		    holder.nameTextview.setText(user.getMUserNick());
-		    holder.avatar.setDefaultImageResId(R.drawable.groups_icon);
-            holder.avatar.setImageUrl("", RequestManager.getImageLoader());
+		    holder.avatar.setImageResource(R.drawable.groups_icon);
+//            holder.avatar.setImageUrl("", RequestManager.getImageLoader());
 		}else if(username.equals(Constant.CHAT_ROOM)){
             //群聊item
             holder.nameTextview.setText(user.getMUserNick());
@@ -135,7 +135,21 @@ public class ContactAdapter extends BaseAdapter implements SectionIndexer{
 		}else{
 //		    holder.nameTextview.setText(user.getNick());
 		    //设置用户头像
-			UserUtils.setUserBeanAvatar(username, holder.avatar);
+//			UserUtils.setUserBeanAvatar(username, holder.avatar);
+
+//            ImageLoader.build()
+//                    .url(SuperWeChatApplication.SERVER_ROOT)
+//                    .addParam(I.KEY_REQUEST,I.REQUEST_DOWNLOAD_AVATAR)
+//                    .addParam(I.NAME_OR_HXID,user.getMUserName())
+//                    .addParam(I.AVATAR_TYPE,"user_avatar")
+//                    .width(80)
+//                    .height(80)
+//                    .defaultPicture(R.drawable.default_face)
+//                    .imageView(holder.avatar)
+//                    .listener(parent)
+//                    .showImage(mContext);
+            ImageLoader.build().listener(parent).showUserAvatar(mContext,user.getMUserName(),holder.avatar);
+
             UserUtils.setUserBeanNick(username,holder.nameTextview);
 //			UserUtils.setUserAvatar(getContext(), username, holder.avatar);
 			if(holder.unreadMsgView != null)

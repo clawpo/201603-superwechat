@@ -135,7 +135,7 @@ public class NearPeopleActivity extends BaseActivity {
         public NearPeopleAdapter(Context context, ArrayList<LocationUserAvatar> users) {
             super();
             this.context = context;
-            imageLoader=ImageLoader.getInstance(context);
+//            imageLoader=ImageLoader.getInstance(context);
 //            myUser= (LocationUserAvatar) SuperWeChatApplication.getInstance().getUser();
 //            ArrayList<NearUserBean> list = createNearUsers(users,myUser);
 //            this.nearUsers = new ArrayList<NearUserBean>();

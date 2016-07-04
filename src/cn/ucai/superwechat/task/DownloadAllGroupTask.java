@@ -115,4 +115,10 @@ public class DownloadAllGroupTask extends BaseActivity {
 //            }
 //        };
 //    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        OkHttpUtils2.release();
+    }
 }
