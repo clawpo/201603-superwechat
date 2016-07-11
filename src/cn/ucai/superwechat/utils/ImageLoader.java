@@ -303,6 +303,21 @@ public class ImageLoader {
             mBean.imageView.setImageBitmap(bitmap);
         }
     }
+
+    public void showGroupAvatar(Context context,String hxid,ImageView imageView){
+        mBean.url = I.DOWNLOAD_USER_AVATAR_URL+userName;
+        mBean.width = 80;
+        mBean.height = 80;
+        mBean.imageView = imageView;
+        mBean.saveFileName = I.AVATAR_TYPE_USER_PATH + I.BACKSLASH + userName;
+        Bitmap bitmap = loadImage(context);//从内存或sd卡加载图片
+        if (bitmap == null) {
+            Log.i("main", "null");
+            mBean.imageView.setImageResource(R.drawable.default_face);
+        } else {
+            mBean.imageView.setImageBitmap(bitmap);
+        }
+    }
 	/**
 	 * 释放ImageLoader类的静态对象
 	 */
